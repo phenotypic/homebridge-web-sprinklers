@@ -13,7 +13,6 @@ function WebSprinkler (log, config) {
 
   this.name = config.name
   this.apiroute = config.apiroute
-  this.pollInterval = config.pollInterval || 60
 
   this.manufacturer = config.manufacturer || packageJson.author.name
   this.serial = config.serial || this.apiroute
@@ -25,13 +24,6 @@ function WebSprinkler (log, config) {
   this.timeout = config.timeout || 3000
   this.http_method = config.http_method || 'GET'
 
-  this.enableColor = config.enableColor || true
-  this.enableBrightness = config.enableBrightness || true
-
-  this.cacheHue = 0
-  this.cacheSaturation = 0
-  this.count = 0
-
   if (this.username != null && this.password != null) {
     this.auth = {
       user: this.username,
@@ -39,7 +31,7 @@ function WebSprinkler (log, config) {
     }
   }
 
-  this.service = new Service.Lightbulb(this.name)
+  this.service = new Service.IrrigationSystem(this.name)
 }
 
 WebSprinkler.prototype = {
@@ -63,39 +55,7 @@ WebSprinkler.prototype = {
     })
   },
 
-  _getStatus: function (callback) {
-    var url = this.apiroute + '/status'
-    this.log('Getting status: %s', url)
-
-    this._httpRequest(url, '', 'GET', function (error, response, responseBody) {
-      if (error) {
-        this.log.warn('Error getting status: %s', error.message)
-        this.service.getCharacteristic(Characteristic.On).updateValue(new Error('Polling failed'))
-        callback(error)
-      } else {
-        this.log('Device response: %s', responseBody)
-        var json = JSON.parse(responseBody)
-        var hsv = convert.hex.hsv(json.currentColor)
-        this.cacheHue = hsv[0]
-        this.cacheSaturation = hsv[1]
-        this.service.getCharacteristic(Characteristic.On).updateValue(json.currentState)
-        this.log('Updated state: %s', json.currentState)
-        if (this.enableBrightness) {
-          this.service.getCharacteristic(Characteristic.Brightness).updateValue(json.currentBrightness)
-          this.log('Updated brightness: %s', json.currentBrightness)
-        }
-        if (this.enableColor) {
-          this.service.getCharacteristic(Characteristic.Hue).updateValue(this.cacheHue)
-          this.log('Updated hue: %s', this.cacheHue)
-          this.service.getCharacteristic(Characteristic.Saturation).updateValue(this.cacheSaturation)
-          this.log('Updated saturation: %s', this.cacheSaturation)
-        }
-        callback()
-      }
-    }.bind(this))
-  },
-
-  setOn: function (value, callback) {
+  setActive: function (value, callback) {
     var url = this.apiroute + '/setState/' + value
     this.log('Setting state: %s', url)
 
@@ -105,62 +65,17 @@ WebSprinkler.prototype = {
         callback(error)
       } else {
         this.log('Successfully set state to %s', value)
+        // Would like to add .getCharacteristic(Characteristic.InUse).updateValue(0) here but can't tell which valve called the function
         callback()
       }
-    }.bind(this))
-  },
-
-  setBrightness: function (value, callback) {
-    var url = this.apiroute + '/setBrightness/' + value
-    this.log('Setting brightness: %s', url)
-
-    this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
-      if (error) {
-        this.log.warn('Error setting brightness: %s', error.message)
-        callback(error)
-      } else {
-        this.log('Successfully set brightness to %s', value)
-        callback()
-      }
-    }.bind(this))
-  },
-
-  setHue: function (value, callback) {
-    this.log('Setting hue to: %s', value)
-    this.cacheHue = value
-    this._setRGB(callback)
-  },
-
-  setSaturation: function (value, callback) {
-    this.log('Setting saturation to: %s', value)
-    this.cacheSaturation = value
-    this._setRGB(callback)
-  },
-
-  _setRGB: function (callback) {
-    this.count = this.count + 1
-    if (this.count === 1) {
-      callback()
-      return
-    }
-
-    var hex = convert.hsv.hex(this.cacheHue, this.cacheSaturation, 100)
-    var url = this.apiroute + '/setColor/' + hex
-    this.log('Setting color: %s', url)
-
-    this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
-      if (error) {
-        this.log.warn('Error setting color: %s', error)
-        callback(error)
-      } else {
-        this.log('Successfully set color to: %s', hex)
-        callback()
-      }
-      this.count = 0
     }.bind(this))
   },
 
   getServices: function () {
+    this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
+    // this.service.getCharacteristic(Characteristic.Active).updateValue(0)
+    // this.service.getCharacteristic(Characteristic.InUse).updateValue(0)
+
     this.informationService = new Service.AccessoryInformation()
     this.informationService
       .setCharacteristic(Characteristic.Manufacturer, this.manufacturer)
@@ -168,32 +83,41 @@ WebSprinkler.prototype = {
       .setCharacteristic(Characteristic.SerialNumber, this.serial)
       .setCharacteristic(Characteristic.FirmwareRevision, this.firmware)
 
-    this.service
-      .getCharacteristic(Characteristic.On)
-      .on('set', this.setOn.bind(this))
+    this.valve1 = new Service.Valve('Zone 1', 1)
+    this.valve1
+      .setCharacteristic(Characteristic.ServiceLabelIndex, 1)
+      .setCharacteristic(Characteristic.ValveType, 1)
+    this.valve1.getCharacteristic(Characteristic.Active).updateValue(0)
+    this.valve1.getCharacteristic(Characteristic.InUse).updateValue(0)
+    this.valve1
+      .getCharacteristic(Characteristic.Active)
+      .on('set', this.setActive.bind(this))
 
-    if (this.enableBrightness) {
-      this.service
-        .getCharacteristic(Characteristic.Brightness)
-        .on('set', this.setBrightness.bind(this))
-    }
+    this.valve2 = new Service.Valve('Zone 2', 2)
+    this.valve2
+      .setCharacteristic(Characteristic.ServiceLabelIndex, 2)
+      .setCharacteristic(Characteristic.ValveType, 1)
+    this.valve2.getCharacteristic(Characteristic.Active).updateValue(0)
+    this.valve2.getCharacteristic(Characteristic.InUse).updateValue(0)
+    this.valve2
+      .getCharacteristic(Characteristic.Active)
+      .on('set', this.setActive.bind(this))
 
-    if (this.enableColor) {
-      this.service
-        .getCharacteristic(Characteristic.Saturation)
-        .on('set', this.setSaturation.bind(this))
-      this.service
-        .getCharacteristic(Characteristic.Hue)
-        .on('set', this.setHue.bind(this))
-    }
+    this.valve3 = new Service.Valve('Zone 3', 3)
+    this.valve3
+      .setCharacteristic(Characteristic.ServiceLabelIndex, 3)
+      .setCharacteristic(Characteristic.ValveType, 1)
+    this.valve3.getCharacteristic(Characteristic.Active).updateValue(0)
+    this.valve3.getCharacteristic(Characteristic.InUse).updateValue(0)
+    this.valve3
+      .getCharacteristic(Characteristic.Active)
+      .on('set', this.setActive.bind(this))
 
-    this._getStatus(function () {})
+    this.service.addLinkedService(this.valve1)
+    this.service.addLinkedService(this.valve2)
+    this.service.addLinkedService(this.valve3)
 
-    setInterval(function () {
-      this._getStatus(function () {})
-    }.bind(this), this.pollInterval * 1000)
-
-    return [this.informationService, this.service]
+    return [this.informationService, this.service, this.valve1, this.valve2, this.valve3]
   }
 
 }
