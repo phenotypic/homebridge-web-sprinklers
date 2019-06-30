@@ -84,8 +84,8 @@ WebSprinkler.prototype = {
       .setCharacteristic(Characteristic.SerialNumber, this.serial)
       .setCharacteristic(Characteristic.FirmwareRevision, this.firmware)
 
-    // Section below is very bulky - each new zone requires a block of code
-    this.valve1 = new Service.Valve('Zone 1', 1)
+    // Section below is very bulky - each new zone requires a block of code and needs to be added to `return`
+    this.valve1 = new Service.Valve('Zone', 1)
     this.valve1
       .setCharacteristic(Characteristic.ServiceLabelIndex, 1)
       .setCharacteristic(Characteristic.ValveType, 1)
@@ -95,7 +95,7 @@ WebSprinkler.prototype = {
       .getCharacteristic(Characteristic.Active)
       .on('set', this.setActive.bind(this))
 
-    this.valve2 = new Service.Valve('Zone 2', 2)
+    this.valve2 = new Service.Valve('Zone', 2)
     this.valve2
       .setCharacteristic(Characteristic.ServiceLabelIndex, 2)
       .setCharacteristic(Characteristic.ValveType, 1)
@@ -105,7 +105,7 @@ WebSprinkler.prototype = {
       .getCharacteristic(Characteristic.Active)
       .on('set', this.setActive.bind(this))
 
-    this.valve3 = new Service.Valve('Zone 3', 3)
+    this.valve3 = new Service.Valve('Zone', 3)
     this.valve3
       .setCharacteristic(Characteristic.ServiceLabelIndex, 3)
       .setCharacteristic(Characteristic.ValveType, 1)
