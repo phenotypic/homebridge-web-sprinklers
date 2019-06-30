@@ -66,7 +66,7 @@ WebSprinkler.prototype = {
         callback(error)
       } else {
         this.log('Successfully set state to %s', value)
-        // Would like to add .getCharacteristic(Characteristic.InUse).updateValue(0)` here but can't tell which zone called the function
+        // Would like to add .getCharacteristic(Characteristic.InUse).updateValue(1)` here but can't tell which zone called the function
         callback()
       }
     }.bind(this))
