@@ -57,6 +57,7 @@ WebSprinkler.prototype = {
 
   setActive: function (value, callback) {
     var url = this.apiroute + '/setState/' + value
+    // Would like to use `var url = this.apiroute + zone + '/setState/' + value` but can't tell which zone called the function
     this.log('Setting state: %s', url)
 
     this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
@@ -65,7 +66,7 @@ WebSprinkler.prototype = {
         callback(error)
       } else {
         this.log('Successfully set state to %s', value)
-        // Would like to add .getCharacteristic(Characteristic.InUse).updateValue(0) here but can't tell which valve called the function
+        // Would like to add .getCharacteristic(Characteristic.InUse).updateValue(0)` here but can't tell which zone called the function
         callback()
       }
     }.bind(this))
@@ -83,6 +84,7 @@ WebSprinkler.prototype = {
       .setCharacteristic(Characteristic.SerialNumber, this.serial)
       .setCharacteristic(Characteristic.FirmwareRevision, this.firmware)
 
+    // Section below is very bulky - each new zone requires a block of code
     this.valve1 = new Service.Valve('Zone 1', 1)
     this.valve1
       .setCharacteristic(Characteristic.ServiceLabelIndex, 1)
