@@ -13,6 +13,8 @@ function WebSprinkler (log, config) {
 
   this.name = config.name
   this.apiroute = config.apiroute
+  this.zones = config.zones || 3
+  this.valveAccessory = []
 
   this.manufacturer = config.manufacturer || packageJson.author.name
   this.serial = config.serial || this.apiroute
@@ -55,18 +57,18 @@ WebSprinkler.prototype = {
     })
   },
 
-  setActive: function (value, callback) {
-    var url = this.apiroute + '/setState/' + value
-    // Would like to use `var url = this.apiroute + zone + '/setState/' + value` but can't tell which zone called the function
-    this.log('Setting state: %s', url)
+  setActive: function (value, callback, zone) {
+    var url = this.apiroute + '/' + zone + '/setState/' + value
+    this.log('Zone %s | Setting state: %s', zone, url)
 
     this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
       if (error) {
-        this.log.warn('Error setting state: %s', error.message)
+        this.log.warn('Zone %s | Error setting state: %s', zone, error.message)
         callback(error)
       } else {
-        this.log('Successfully set state to %s', value)
-        // Would like to add .getCharacteristic(Characteristic.InUse).updateValue(1)` here but can't tell which zone called the function
+        this.log('Zone %s | Successfully set state to %s', zone, value)
+        // `1` should be replaced with `zone`
+        this.valveAccessory[1].getCharacteristic(Characteristic.InUse).updateValue(value)
         callback()
       }
     }.bind(this))
@@ -84,42 +86,32 @@ WebSprinkler.prototype = {
       .setCharacteristic(Characteristic.SerialNumber, this.serial)
       .setCharacteristic(Characteristic.FirmwareRevision, this.firmware)
 
-    // Section below is very bulky - each new zone requires a block of code and needs to be added to `return`
-    this.valve1 = new Service.Valve('Zone', 1)
-    this.valve1
-      .setCharacteristic(Characteristic.ServiceLabelIndex, 1)
-      .setCharacteristic(Characteristic.ValveType, 1)
-    this.valve1.getCharacteristic(Characteristic.Active).updateValue(0)
-    this.valve1.getCharacteristic(Characteristic.InUse).updateValue(0)
-    this.valve1
-      .getCharacteristic(Characteristic.Active)
-      .on('set', this.setActive.bind(this))
+    var services = [this.informationService, this.service]
+    var index
+    var count = this.zones + 1
+    for (index = 1; index < count; index++) {
+      var accessory = new Service.Valve('Zone', index)
+      accessory
+        .setCharacteristic(Characteristic.ServiceLabelIndex, index)
+        .setCharacteristic(Characteristic.ValveType, 1)
+      accessory.getCharacteristic(Characteristic.Active).updateValue(0)
+      accessory.getCharacteristic(Characteristic.InUse).updateValue(0)
+      accessory
+        .getCharacteristic(Characteristic.Active)
+        // .on('set', this.setActive).bind(this)
 
-    this.valve2 = new Service.Valve('Zone', 2)
-    this.valve2
-      .setCharacteristic(Characteristic.ServiceLabelIndex, 2)
-      .setCharacteristic(Characteristic.ValveType, 1)
-    this.valve2.getCharacteristic(Characteristic.Active).updateValue(0)
-    this.valve2.getCharacteristic(Characteristic.InUse).updateValue(0)
-    this.valve2
-      .getCharacteristic(Characteristic.Active)
-      .on('set', this.setActive.bind(this))
+        // Function below does not handle `index` as desired
+        .on('set', (value, callback) => {
+          this.setActive(value, callback, index)
+        })
 
-    this.valve3 = new Service.Valve('Zone', 3)
-    this.valve3
-      .setCharacteristic(Characteristic.ServiceLabelIndex, 3)
-      .setCharacteristic(Characteristic.ValveType, 1)
-    this.valve3.getCharacteristic(Characteristic.Active).updateValue(0)
-    this.valve3.getCharacteristic(Characteristic.InUse).updateValue(0)
-    this.valve3
-      .getCharacteristic(Characteristic.Active)
-      .on('set', this.setActive.bind(this))
+      this.valveAccessory[index] = accessory
+      this.service.addLinkedService(accessory)
+      services.push(accessory)
+      this.log('Initialized Zone %s', index)
+    }
 
-    this.service.addLinkedService(this.valve1)
-    this.service.addLinkedService(this.valve2)
-    this.service.addLinkedService(this.valve3)
-
-    return [this.informationService, this.service, this.valve1, this.valve2, this.valve3]
+    return services
   }
 
 }
