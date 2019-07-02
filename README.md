@@ -1,4 +1,4 @@
-# homebridge-web-sprinkler _(Under Development)_
+# homebridge-web-sprinklers _(Under Development)_
 Homebridge plugin for a web-based sprinkler system
 
 ```
@@ -11,6 +11,6 @@ Homebridge plugin for a web-based sprinkler system
 ]
 ```
 
-`npm install -g homebridge-web-sprinkler`
+`npm install -g homebridge-web-sprinklers`
 
 ![Screenshot](https://i.ibb.co/8jLn84c/IMG-7819.png)
