@@ -13,7 +13,7 @@ function WebSprinklers (log, config) {
 
   this.name = config.name
   this.apiroute = config.apiroute
-  this.zones = config.zones || 8
+  this.zones = config.zones || 3
   this.valveAccessory = []
 
   this.manufacturer = config.manufacturer || packageJson.author.name
