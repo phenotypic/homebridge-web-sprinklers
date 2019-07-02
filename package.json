@@ -1,5 +1,5 @@
 {
-  "name": "homebridge-web-sprinkler",
+  "name": "homebridge-web-sprinklers",
   "version": "1.0.3",
   "description": "Homebridge plugin for a web-based sprinkler system",
   "main": "index.js",
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Tommrodrigues/homebridge-web-sprinkler.git"
+    "url": "git+https://github.com/Tommrodrigues/homebridge-web-sprinklers.git"
   },
   "keywords": [
     "homebridge-plugin"
@@ -24,7 +24,7 @@
   "author": "Tom Rodrigues",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Tommrodrigues/homebridge-web-sprinkler/issues"
+    "url": "https://github.com/Tommrodrigues/homebridge-web-sprinklers/issues"
   },
-  "homepage": "https://github.com/Tommrodrigues/homebridge-web-sprinkler#readme"
+  "homepage": "https://github.com/Tommrodrigues/homebridge-web-sprinklers#readme"
 }
