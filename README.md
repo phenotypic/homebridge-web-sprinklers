@@ -1,16 +1,26 @@
 # homebridge-web-sprinklers _(Under Development)_
-Homebridge plugin for a web-based sprinkler system
 
-```
+[![npm](https://img.shields.io/npm/v/homebridge-web-sprinklers.svg)](https://www.npmjs.com/package/homebridge-web-sprinklers) [![npm](https://img.shields.io/npm/dt/homebridge-web-sprinklers.svg)](https://www.npmjs.com/package/homebridge-web-sprinklers)
+
+## Description
+
+This [homebridge](https://github.com/nfarina/homebridge) plugin exposes a web-based sprinkler system to Apple's [HomeKit](http://www.apple.com/ios/home/). Using simple HTTP requests, the plugin allows you to monitor and turn on/off individual sprinkler zones.
+
+## Installation
+
+1. Install [homebridge](https://github.com/nfarina/homebridge#installation-details)
+2. Install this plugin: `npm install -g homebridge-web-sprinklers`
+3. Update your `config.json` file
+
+## Configuration
+
+```json
 "accessories": [
-    {
+     {
        "accessory": "WebSprinklers",
        "name": "Sprinklers",
-       "apiroute": "http://google.com"
+       "apiroute": "http://google.com",
+       "zones": 8
      }
 ]
 ```
-
-`npm install -g homebridge-web-sprinklers`
-
-![Screenshot](https://i.ibb.co/8jLn84c/IMG-7819.png)
