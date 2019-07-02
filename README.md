@@ -4,7 +4,7 @@ Homebridge plugin for a web-based sprinkler system
 ```
 "accessories": [
     {
-       "accessory": "WebSprinkler",
+       "accessory": "WebSprinklers",
        "name": "Sprinklers",
        "apiroute": "http://google.com"
      }
