@@ -1,14 +1,14 @@
 var Service, Characteristic
-const request = require('request')
 const packageJson = require('./package.json')
+const request = require('request')
 
 module.exports = function (homebridge) {
   Service = homebridge.hap.Service
   Characteristic = homebridge.hap.Characteristic
-  homebridge.registerAccessory('homebridge-web-sprinkler', 'WebSprinkler', WebSprinkler)
+  homebridge.registerAccessory('homebridge-web-sprinklers', 'WebSprinklers', WebSprinklers)
 }
 
-function WebSprinkler (log, config) {
+function WebSprinklers (log, config) {
   this.log = log
 
   this.name = config.name
@@ -36,7 +36,7 @@ function WebSprinkler (log, config) {
   this.service = new Service.IrrigationSystem(this.name)
 }
 
-WebSprinkler.prototype = {
+WebSprinklers.prototype = {
 
   identify: function (callback) {
     this.log('Identify requested!')
