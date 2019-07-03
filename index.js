@@ -186,7 +186,10 @@ WebSprinklers.prototype = {
       // Function below should have the ability to notify which zone is calling them
       accessory
         .getCharacteristic(Characteristic.Active)
-        .on('set', this.setActive.bind(this))
+        // .on('set', this.setActive.bind(this))
+        .on('set', (value, callback) => {
+          this.setActive(value, callback, index)
+        })
 
       this.valveAccessory[index] = accessory
       this.service.addLinkedService(accessory)
