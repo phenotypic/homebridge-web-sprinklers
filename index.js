@@ -1,6 +1,7 @@
 var Service, Characteristic
 const packageJson = require('./package.json')
 const request = require('request')
+const schedule = require('node-schedule')
 
 module.exports = function (homebridge) {
   Service = homebridge.hap.Service
@@ -15,6 +16,21 @@ function WebSprinklers (log, config) {
   this.apiroute = config.apiroute
   this.zones = config.zones || 3
   this.valveAccessory = []
+
+  this.town = config.town
+  this.country = config.country
+  this.key = config.key
+
+  this.defaultTime = config.defaultTime || 20
+  this.rainThreshold = config.rainThreshold || 0
+  this.sunriseOffset = config.sunriseOffset || 60
+  this.frostTemperature = config.frostTemperature || 10
+  this.highTemperature = config.highTemperature || 20
+  this.coldPercentage = config.coldPercentage || 50
+  this.passes = config.passes || 2
+
+  this.wateringTime = 10
+  this.wateringSchedule = null
 
   this.manufacturer = config.manufacturer || packageJson.author.name
   this.serial = config.serial || this.apiroute
@@ -74,10 +90,87 @@ WebSprinklers.prototype = {
     }.bind(this))
   },
 
+  setDuration: function (value, callback, zone) {
+    var url = this.apiroute + '/' + zone + '/setState/' + value
+    this.log('Zone %s | Setting state: %s', zone, url)
+
+    this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
+      if (error) {
+        this.log.warn('Zone %s | Error setting state: %s', zone, error.message)
+        callback(error)
+      } else {
+        this.log('Zone %s | Successfully set state to %s', zone, value)
+        // `1` should be replaced with `zone`
+        this.valveAccessory[1].getCharacteristic(Characteristic.InUse).updateValue(value)
+        callback()
+      }
+    }.bind(this))
+  },
+
+  _calculateSchedule: function (callback) {
+    var url = 'http://api.apixu.com/v1/forecast.json?key=' + this.key + '&q=' + this.town + ',' + this.country + '&days=2'
+    this.log('Retrieving weather data for %s - %s', this.town, this.country)
+    this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
+      if (error) {
+        this.log.warn('Error getting weather data: %s', error)
+        callback(error)
+      } else {
+        var json = JSON.parse(responseBody)
+        var todayDate = json.forecast.forecastday[0].date
+        var todayMin = json.forecast.forecastday[0].day.mintemp_c
+        var todayMax = json.forecast.forecastday[0].day.maxtemp_c
+        var todayRain = json.forecast.forecastday[0].day.totalprecip_in
+        var todayCondition = json.forecast.forecastday[0].day.condition.text
+        var todaySunrise = json.forecast.forecastday[0].astro.sunrise.replace(' AM', '')
+        var tomorrowDate = json.forecast.forecastday[1].date
+        var tomorrowRain = json.forecast.forecastday[1].day.totalprecip_in
+        var tomorrowCondition = json.forecast.forecastday[1].day.condition.text
+        var tomorrowSunrise = json.forecast.forecastday[1].astro.sunrise.replace(' AM', '')
+        this.log('Today: %s', todayCondition)
+        this.log('Today min temp: %s', todayMin)
+        this.log('Today max temp: %s', todayMax)
+        this.log('Today rain (in): %s', todayRain)
+        this.log('Tomorrow: %s', tomorrowCondition)
+        this.log('Tomorrow rain (in): %s', tomorrowRain)
+
+        var todaySunriseDate = new Date(todayDate + 'T' + todaySunrise)
+        var tomorrowSunriseDate = new Date(tomorrowDate + 'T' + tomorrowSunrise)
+
+        // if (true) {
+        if (todayRain <= this.rainThreshold && tomorrowRain <= this.rainThreshold && todayMin > this.frostTemperature) {
+          this.wateringTime = this.defaultTime
+          if (todayMax < 20) {
+            this.log('Max temperature is less than %s°C so watering time reduced by %s%', this.highTemperature, this.coldPercentage)
+            this.wateringTime = this.wateringTime / this.coldPercentage
+          }
+          var totalTime = this.wateringTime * this.zones
+          this.wateringTime = this.wateringTime / this.passes
+          this.log('Will water each zone for %s minutes (%s passes)', this.wateringTime, this.passes)
+
+          var now = new Date()
+          var scheduledTime = new Date(todaySunriseDate.getTime() - (totalTime + this.sunriseOffset) * 60000)
+          if ((Math.abs(scheduledTime - now)) < 0) {
+            scheduledTime = new Date(tomorrowSunriseDate.getTime() - (totalTime + this.sunriseOffset) * 60000)
+          }
+          // scheduledTime = new Date('2019-07-03T03:30:10')
+          this.wateringSchedule = schedule.scheduleJob(scheduledTime, function () {
+            this._wateringCycle()
+          }.bind(this))
+          var finishTime = new Date(scheduledTime.getTime() + totalTime * 60000)
+          this.log('Watering scheduled for: %s', scheduledTime.getDate() + '-' + (scheduledTime.getMonth() + 1) + '-' + scheduledTime.getFullYear() + ' ' + scheduledTime.getHours() + ':' + scheduledTime.getMinutes() + ':' + scheduledTime.getSeconds())
+          this.log('Total watering time: %s minutes (finishes at %s)', totalTime, finishTime.getHours() + ':' + finishTime.getMinutes() + ':' + finishTime.getSeconds())
+        } else {
+          this.log('No schedule set for today: conditions not suitable for watering')
+        }
+        callback()
+      }
+    }.bind(this))
+  },
+
   getServices: function () {
     this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
-    // this.service.getCharacteristic(Characteristic.Active).updateValue(0)
-    // this.service.getCharacteristic(Characteristic.InUse).updateValue(0)
+    this.service.getCharacteristic(Characteristic.Active).updateValue(0) // `1` is scheduled, `0` no schedule (for the day)
+    this.service.getCharacteristic(Characteristic.InUse).updateValue(0)
 
     this.informationService = new Service.AccessoryInformation()
     this.informationService
@@ -96,20 +189,29 @@ WebSprinklers.prototype = {
         .setCharacteristic(Characteristic.ValveType, 1)
       accessory.getCharacteristic(Characteristic.Active).updateValue(0)
       accessory.getCharacteristic(Characteristic.InUse).updateValue(0)
+
+      // Both of the functions below should have the ability to notify which zone is calling them
       accessory
         .getCharacteristic(Characteristic.Active)
-        // .on('set', this.setActive).bind(this)
+        .on('set', this.setActive.bind(this))
 
-        // Function below does not handle `index` as desired
-        .on('set', (value, callback) => {
-          this.setActive(value, callback, index)
-        })
+      /* Function below does not handle `index` as desired
+      .on('set', (value, callback) => {
+        this.setActive(value, callback, index)
+      })
+      */
+
+      accessory
+        .getCharacteristic(Characteristic.SetDuration)
+        .on('set', this.setDuration.bind(this))
 
       this.valveAccessory[index] = accessory
       this.service.addLinkedService(accessory)
       services.push(accessory)
-      this.log('Initialized Zone %s', index)
     }
+    this.log('Initialised %s zones', this.zones)
+
+    this._calculateSchedule(function () {})
 
     return services
   }
