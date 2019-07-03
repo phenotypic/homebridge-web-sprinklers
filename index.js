@@ -73,7 +73,7 @@ WebSprinklers.prototype = {
     })
   },
 
-  setActive: function (value, callback, zone) {
+  setActive: function (zone, value, callback) {
     var url = this.apiroute + '/' + zone + '/setState/' + value
     this.log('Zone %s | Setting state: %s', zone, url)
 
@@ -84,14 +84,15 @@ WebSprinklers.prototype = {
       } else {
         this.log('Zone %s | Successfully set state to %s', zone, value)
         // `1` should be replaced with `zone`
-        this.valveAccessory[1].getCharacteristic(Characteristic.InUse).updateValue(value)
+        this.valveAccessory[zone].getCharacteristic(Characteristic.InUse).updateValue(value)
         callback()
       }
     }.bind(this))
   },
 
   _calculateSchedule: function (callback) {
-    var url = 'http://api.apixu.com/v1/forecast.json?key=' + this.key + '&q=' + this.town + ',' + this.country + '&days=2'
+    // var url = 'http://api.apixu.com/v1/forecast.json?key=' + this.key + '&q=' + this.town + ',' + this.country + '&days=2'
+    var url = 'http://192.168.1.198/Desktop/example.json'
     this.log('Retrieving weather data for %s - %s', this.town, this.country)
     this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
       if (error) {
@@ -187,9 +188,7 @@ WebSprinklers.prototype = {
       accessory
         .getCharacteristic(Characteristic.Active)
         // .on('set', this.setActive.bind(this))
-        .on('set', (value, callback) => {
-          this.setActive(value, callback, index)
-        })
+        .on('set', this.setActive.bind(this, index))
 
       this.valveAccessory[index] = accessory
       this.service.addLinkedService(accessory)
