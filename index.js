@@ -18,6 +18,7 @@ function WebSprinklers (log, config) {
   this.apiroute = config.apiroute
   this.zones = config.zones || 3
 
+  this.listener = config.listener || false
   this.port = config.port || 2000
   this.requestArray = ['state']
 
@@ -55,24 +56,26 @@ function WebSprinklers (log, config) {
     }
   }
 
-  this.server = http.createServer(function (request, response) {
-    var parts = request.url.split('/')
-    var partOne = parts[parts.length - 3]
-    var partTwo = parts[parts.length - 2]
-    var partThree = parts[parts.length - 1]
-    if (parts.length === 4 && this.requestArray.includes(partTwo) && partThree.length === 1) {
-      this.log('Handling request: %s', request.url)
-      response.end('Handling request')
-      this._httpHandler(partOne, partTwo, partThree)
-    } else {
-      this.log.warn('Invalid request: %s', request.url)
-      response.end('Invalid request')
-    }
-  }.bind(this))
+  if (this.listener) {
+    this.server = http.createServer(function (request, response) {
+      var parts = request.url.split('/')
+      var partOne = parts[parts.length - 3]
+      var partTwo = parts[parts.length - 2]
+      var partThree = parts[parts.length - 1]
+      if (parts.length === 4 && this.requestArray.includes(partTwo) && partThree.length === 1) {
+        this.log('Handling request: %s', request.url)
+        response.end('Handling request')
+        this._httpHandler(partOne, partTwo, partThree)
+      } else {
+        this.log.warn('Invalid request: %s', request.url)
+        response.end('Invalid request')
+      }
+    }.bind(this))
 
-  this.server.listen(this.port, function () {
-    this.log('Listen server: http://%s:%s', ip.address(), this.port)
-  }.bind(this))
+    this.server.listen(this.port, function () {
+      this.log('Listen server: http://%s:%s', ip.address(), this.port)
+    }.bind(this))
+  }
 
   this.service = new Service.IrrigationSystem(this.name)
 }
