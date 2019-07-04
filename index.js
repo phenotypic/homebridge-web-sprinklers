@@ -26,18 +26,24 @@ function WebSprinklers (log, config) {
   this.country = config.country
   this.key = config.key
 
-  this.defaultTime = config.defaultTime || 20
-  this.passes = config.passes || 2
+  this.defaultDuration = config.defaultDuration || 10
+  this.cycles = config.cycles || 2
   this.rainThreshold = config.rainThreshold || 0.05
   this.sunriseOffset = config.sunriseOffset || 60
   this.lowThreshold = config.lowThreshold || 10
   this.highThreshold = config.highThreshold || 20
-  this.reductionPercentage = config.reductionPercentage || 50
+  this.heatMultiplier = config.heatMultiplier || 2
 
-  this.wateringTime = 10
-  this.wateringSchedule = null
+  this.wateringDuration = this.defaultDuration
+  this.scheduledWateringTime = null
   this.valveAccessory = []
   this.timeoutArray = []
+  this.chosenDurationArray = []
+
+  var count = this.zones + 1
+  for (var zone = 1; zone < count; zone++) {
+    this.chosenDurationArray[zone] = this.defaultDuration
+  }
 
   this.manufacturer = config.manufacturer || packageJson.author.name
   this.serial = config.serial || this.apiroute
@@ -105,8 +111,7 @@ WebSprinklers.prototype = {
     switch (characteristic) {
       case 'state':
         this.log('Zone %s | Updating %s to: %s', zone, characteristic, value)
-        this.valveAccessory[zone].getCharacteristic(Characteristic.Active).updateValue(value)
-        this.valveAccessory[zone].getCharacteristic(Characteristic.InUse).updateValue(value)
+        this.valveAccessory[zone].setCharacteristic(Characteristic.Active, value)
         break
       default:
         this.log.warn('Zone %s | Unknown characteristic "%s" with value "%s"', zone, characteristic, value)
@@ -124,31 +129,36 @@ WebSprinklers.prototype = {
         var json = JSON.parse(responseBody)
         var day1 = json.forecast.forecastday[0]
         var day2 = json.forecast.forecastday[1]
+
         var todayDate = day1.date
-        var todayMin = day1.day.mintemp_c
-        var todayMax = day1.day.maxtemp_c
-        var todayRain = day1.day.totalprecip_in
-        var todayCondition = day1.day.condition.text
         var todaySunrise = day1.astro.sunrise.substring(0, 5)
         var tomorrowDate = day2.date
-        var tomorrowRain = day2.day.totalprecip_in
-        var tomorrowCondition = day2.day.condition.text
         var tomorrowSunrise = day2.astro.sunrise.substring(0, 5)
+
+        var todayCondition = day1.day.condition.text
+        var todayRain = day1.day.totalprecip_in
+        var tomorrowCondition = day2.day.condition.text
+        var tomorrowRain = day2.day.totalprecip_in
+        var tomorrowMin = day2.day.mintemp_c
+        var tomorrowMax = day2.day.maxtemp_c
+
         this.log('Today summary: %s', todayCondition)
-        this.log('Today min temp (°C): %s', todayMin)
-        this.log('Today max temp (°C): %s', todayMax)
         this.log('Today rain (in): %s', todayRain)
         this.log('Tomorrow summary: %s', tomorrowCondition)
+        this.log('Tomorrow min temp (°C): %s', tomorrowMin)
+        this.log('Tomorrow max temp (°C): %s', tomorrowMax)
         this.log('Tomorrow rain (in): %s', tomorrowRain)
 
-        this.wateringTime = this.defaultTime
-        if (todayMax < this.highThreshold) {
-          this.wateringTime = (this.reductionPercentage / 100) * this.wateringTime
+        this.wateringDuration = this.defaultDuration
+        // Adjustments to watering duration should be made here
+        if (tomorrowMax > this.highThreshold) {
+          this.wateringDuration = this.wateringDuration * this.heatMultiplier
         }
-        var totalTime = this.wateringTime * this.zones
-        this.wateringTime = this.wateringTime / this.passes
 
-        if (todayRain <= this.rainThreshold && tomorrowRain <= this.rainThreshold && todayMin > this.lowThreshold) {
+        var totalTime = this.wateringDuration * this.zones
+        this.wateringDuration = this.wateringDuration / this.cycles
+
+        if (todayRain < this.rainThreshold && tomorrowRain < this.rainThreshold && tomorrowMin > this.lowThreshold) {
           var now = new Date()
           var todaySunriseDate = new Date(todayDate + 'T' + todaySunrise)
           var tomorrowSunriseDate = new Date(tomorrowDate + 'T' + tomorrowSunrise)
@@ -159,12 +169,12 @@ WebSprinklers.prototype = {
           }
           var finishTime = new Date(scheduledTime.getTime() + totalTime * 60000)
 
-          this.wateringSchedule = schedule.scheduleJob(scheduledTime, function () {
-            this.log('Starting water cycle')
+          this.scheduledWateringTime = schedule.scheduleJob(scheduledTime, function () {
+            this.log('Starting water cycle (1/%s)', this.cycles)
             this._wateringCycle(1, 1)
           }.bind(this))
-          // Cancel schedule with `this.wateringSchedule.cancel()`
-          this.log('Will water each zone for %s minutes (%s passes)', this.wateringTime, this.passes)
+          // Cancel schedule with `this.scheduledWateringTime.cancel()`
+          this.log('Will water each zone for %s minutes (%s cycles)', this.wateringDuration, this.cycles)
           this.log('Watering scheduled for: %s', scheduledTime.getDate() + '-' + (scheduledTime.getMonth() + 1) + '-' + scheduledTime.getFullYear() + ' ' + scheduledTime.getHours() + ':' + scheduledTime.getMinutes() + ':' + scheduledTime.getSeconds())
           this.log('Total watering time: %s minutes (finishes at %s)', totalTime, finishTime.getHours() + ':' + finishTime.getMinutes() + ':' + finishTime.getSeconds())
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
@@ -179,24 +189,25 @@ WebSprinklers.prototype = {
     }.bind(this))
   },
 
-  _wateringCycle: function (zone, pass) {
+  _wateringCycle: function (zone, cycle) {
     this.valveAccessory[zone].setCharacteristic(Characteristic.Active, 1)
-    setTimeout(() => {
+    this.timeoutArray[zone] = setTimeout(() => {
+      this.valveAccessory[zone].setCharacteristic(Characteristic.Active, 0)
       var nextZone = zone + 1
       if (nextZone <= this.zones) {
-        this._wateringCycle(nextZone, pass)
+        this._wateringCycle(nextZone, cycle)
       } else {
-        var nextPass = pass + 1
-        if (nextPass <= this.passes) {
-          this._wateringCycle(1, nextPass)
-          this.log('Starting pass %s', nextPass)
+        var nextCycle = cycle + 1
+        if (nextCycle <= this.cycles) {
+          this._wateringCycle(1, nextCycle)
+          this.log('Starting watering cycle (%s/%s)', nextCycle, this.cycles)
         } else {
-          this.log('Watering cycle finished')
+          this.log('Watering finished')
           this.log('Calculating schedule for tomorrow...')
           this._calculateSchedule(function () {})
         }
       }
-    }, this.wateringTime * 60000)
+    }, this.wateringDuration * 60000)
   },
 
   setActive: function (zone, value, callback) {
@@ -209,17 +220,23 @@ WebSprinklers.prototype = {
       } else {
         this.log('Zone %s | Successfully set state to %s', zone, value)
         this.valveAccessory[zone].getCharacteristic(Characteristic.InUse).updateValue(value)
-        if (value === 1) {
+        if (value === 1 && typeof this.timeoutArray[zone] === 'undefined') {
           this.timeoutArray[zone] = setTimeout(() => {
             this.valveAccessory[zone].setCharacteristic(Characteristic.Active, 0)
-          }, this.wateringTime * 60000)
-          this.log(this.wateringTime)
-        } else {
-          clearTimeout(this.timeoutArray[zone])
+          }, this.chosenDurationArray[zone] * 60000)
+        } else if (value === 0) {
+          this.timeoutArray[zone] = undefined
         }
         callback()
       }
     }.bind(this))
+  },
+
+  setDuration: function (zone, value, callback) {
+    value = value / 60
+    this.log('Zone %s | Manual duration set to %s minutes', zone, value)
+    this.chosenDurationArray[zone] = value
+    callback()
   },
 
   getServices: function () {
@@ -243,10 +260,15 @@ WebSprinklers.prototype = {
         .setCharacteristic(Characteristic.ValveType, 1)
       accessory.getCharacteristic(Characteristic.Active).updateValue(0)
       accessory.getCharacteristic(Characteristic.InUse).updateValue(0)
+      accessory.getCharacteristic(Characteristic.SetDuration).updateValue(this.defaultDuration * 60)
 
       accessory
         .getCharacteristic(Characteristic.Active)
         .on('set', this.setActive.bind(this, zone))
+
+      accessory
+        .getCharacteristic(Characteristic.SetDuration)
+        .on('set', this.setDuration.bind(this, zone))
 
       this.valveAccessory[zone] = accessory
       this.service.addLinkedService(accessory)
