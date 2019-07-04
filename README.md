@@ -45,9 +45,9 @@ Watering will be scheduled by the plugin to end just before the next sunrise, as
 ## Optional fields
 | Key | Description | Default |
 | --- | --- | --- |
-| `defaultTime` | Default total watering time per zone (in minutes)  | `20` |
-| `passes` | Number of zone passes (total time is up into each pass)  | `2` |
-| `rainThreshold` | Rain threshold (in inches) above which watering will be cancelled | `0.05` |
+| `defaultDuration` | Default total watering time per zone (in minutes)  | `20` |
+| `cycles` | Number of cycles per zone (total watering time is spread between cycles)  | `2` |
+| `rainThreshold` | Rain threshold (in inches) at which watering will be cancelled | `0.05` |
 | `lowThreshold` | Temperature (°C) below which watering will be cancelled | `10` |
 | `highThreshold` | Temperature (°C) above which 100% of watering time will occur (reduced by `coldPercentage` otherwise) | `20` |
 | `reductionPercentage` | Percentage by which watering time will be reduced by if `highThreshold` has not been met | `50` |
