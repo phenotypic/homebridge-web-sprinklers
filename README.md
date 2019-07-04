@@ -102,3 +102,5 @@ Your API should be able to:
 - Watering needs vary widely as a result of a number of factors including sprinkler output, lawn type and local conditions. The plugin will schedule a watering cycle every day (assuming certain thresholds are not met) and may therefore be unsuitable if you need to limit watering to a certain number of days each week (unless you disable scheduling)
 
 - By default, turning a valve on manually within the app will turn it off after the number of minutes you have defined for `defaultDuration`. You can change this manual duration from within the Home app for each zone. This will **not** affect the watering time calculated by the plugin for the schedule
+
+- Your [Apixu API](https://www.apixu.com) key grants you access to `10000` API calls per month. This should not be a concern as the plugin will only make an API call once per day (as well as when homebridge starts up)
