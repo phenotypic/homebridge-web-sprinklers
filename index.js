@@ -174,7 +174,7 @@ WebSprinklers.prototype = {
             this._wateringCycle(1, 1)
           }.bind(this))
           // Cancel schedule with `this.scheduledWateringTime.cancel()`
-          this.log('Will water each zone for %s minutes (%s cycles)', this.wateringDuration, this.cycles)
+          this.log('Each zone will recieve %s %s minute cycles', this.cycles, this.wateringDuration)
           this.log('Watering scheduled for: %s', scheduledTime.getDate() + '-' + (scheduledTime.getMonth() + 1) + '-' + scheduledTime.getFullYear() + ' ' + scheduledTime.getHours() + ':' + scheduledTime.getMinutes() + ':' + scheduledTime.getSeconds())
           this.log('Total watering time: %s minutes (finishes at %s)', totalTime, finishTime.getHours() + ':' + finishTime.getMinutes() + ':' + finishTime.getSeconds())
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
