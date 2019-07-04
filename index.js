@@ -122,16 +122,18 @@ WebSprinklers.prototype = {
         callback(error)
       } else {
         var json = JSON.parse(responseBody)
-        var todayDate = json.forecast.forecastday[0].date
-        var todayMin = json.forecast.forecastday[0].day.mintemp_c
-        var todayMax = json.forecast.forecastday[0].day.maxtemp_c
-        var todayRain = json.forecast.forecastday[0].day.totalprecip_in
-        var todayCondition = json.forecast.forecastday[0].day.condition.text
-        var todaySunrise = json.forecast.forecastday[0].astro.sunrise.substring(0, 5)
-        var tomorrowDate = json.forecast.forecastday[1].date
-        var tomorrowRain = json.forecast.forecastday[1].day.totalprecip_in
-        var tomorrowCondition = json.forecast.forecastday[1].day.condition.text
-        var tomorrowSunrise = json.forecast.forecastday[1].astro.sunrise.substring(0, 5)
+        var day1 = json.forecast.forecastday[0]
+        var day2 = json.forecast.forecastday[1]
+        var todayDate = day1.date
+        var todayMin = day1.day.mintemp_c
+        var todayMax = day1.day.maxtemp_c
+        var todayRain = day1.day.totalprecip_in
+        var todayCondition = day1.day.condition.text
+        var todaySunrise = day1.astro.sunrise.substring(0, 5)
+        var tomorrowDate = day2.date
+        var tomorrowRain = day2.day.totalprecip_in
+        var tomorrowCondition = day2.day.condition.text
+        var tomorrowSunrise = day2.astro.sunrise.substring(0, 5)
         this.log('Today summary: %s', todayCondition)
         this.log('Today min temp (°C): %s', todayMin)
         this.log('Today max temp (°C): %s', todayMax)
