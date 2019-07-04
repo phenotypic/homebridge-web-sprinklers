@@ -30,9 +30,9 @@ function WebSprinklers (log, config) {
   this.passes = config.passes || 2
   this.rainThreshold = config.rainThreshold || 0.05
   this.sunriseOffset = config.sunriseOffset || 60
-  this.frostTemperature = config.frostTemperature || 10
-  this.highTemperature = config.highTemperature || 20
-  this.coldPercentage = config.coldPercentage || 50
+  this.lowThreshold = config.lowThreshold || 10
+  this.highThreshold = config.highThreshold || 20
+  this.reductionPercentage = config.reductionPercentage || 50
 
   this.wateringTime = 10
   this.wateringSchedule = null
@@ -140,13 +140,13 @@ WebSprinklers.prototype = {
         this.log('Tomorrow rain (in): %s', tomorrowRain)
 
         this.wateringTime = this.defaultTime
-        if (todayMax < this.highTemperature) {
-          this.wateringTime = (this.coldPercentage / 100) * this.wateringTime
+        if (todayMax < this.highThreshold) {
+          this.wateringTime = (this.reductionPercentage / 100) * this.wateringTime
         }
         var totalTime = this.wateringTime * this.zones
         this.wateringTime = this.wateringTime / this.passes
 
-        if (todayRain <= this.rainThreshold && tomorrowRain <= this.rainThreshold && todayMin > this.frostTemperature) {
+        if (todayRain <= this.rainThreshold && tomorrowRain <= this.rainThreshold && todayMin > this.lowThreshold) {
           var now = new Date()
           var todaySunriseDate = new Date(todayDate + 'T' + todaySunrise)
           var tomorrowSunriseDate = new Date(tomorrowDate + 'T' + tomorrowSunrise)
