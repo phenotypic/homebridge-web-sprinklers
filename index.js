@@ -159,17 +159,17 @@ WebSprinklers.prototype = {
         var totalTime = this.wateringDuration * this.zones
         this.wateringDuration = this.wateringDuration / this.cycles
 
+        var now = new Date()
+        var todaySunriseDate = new Date(todayDate + 'T' + todaySunrise)
+        var tomorrowSunriseDate = new Date(tomorrowDate + 'T' + tomorrowSunrise)
+
+        var scheduledTime = new Date(todaySunriseDate.getTime() - (totalTime + this.sunriseOffset) * 60000)
+        if (scheduledTime.getTime() < now.getTime()) {
+          scheduledTime = new Date(tomorrowSunriseDate.getTime() - (totalTime + this.sunriseOffset) * 60000)
+        }
+        var finishTime = new Date(scheduledTime.getTime() + totalTime * 60000)
+
         if (todayRain < this.rainThreshold && tomorrowRain < this.rainThreshold && tomorrowMin > this.lowThreshold) {
-          var now = new Date()
-          var todaySunriseDate = new Date(todayDate + 'T' + todaySunrise)
-          var tomorrowSunriseDate = new Date(tomorrowDate + 'T' + tomorrowSunrise)
-
-          var scheduledTime = new Date(todaySunriseDate.getTime() - (totalTime + this.sunriseOffset) * 60000)
-          if (scheduledTime.getTime() < now.getTime()) {
-            scheduledTime = new Date(tomorrowSunriseDate.getTime() - (totalTime + this.sunriseOffset) * 60000)
-          }
-          var finishTime = new Date(scheduledTime.getTime() + totalTime * 60000)
-
           this.scheduledWateringTime = schedule.scheduleJob(scheduledTime, function () {
             this.log('Starting water cycle (1/%s)', this.cycles)
             this._wateringCycle(1, 1)
@@ -184,6 +184,10 @@ WebSprinklers.prototype = {
           this.log('No schedule set: conditions not suitable for watering')
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(0)
           this.service.getCharacteristic(Characteristic.Active).updateValue(0)
+          schedule.scheduleJob(scheduledTime, function () {
+            this.log('Calculating schedule for tomorrow...')
+            this._calculateSchedule(function () {})
+          }.bind(this))
         }
         callback()
       }
