@@ -6,7 +6,7 @@
 
 This [homebridge](https://github.com/nfarina/homebridge) plugin controls a web-based sprinkler system and exposes it to Apple's [HomeKit](http://www.apple.com/ios/home/). Using simple HTTP requests and the [Apixu API](https://www.apixu.com), the plugin schedules watering and allows you to monitor and turn on/off individual sprinkler zones.
 
-Watering will be scheduled by the plugin to end just before the next sunrise, assuming that it will not rain in the next 2 days and that the temperature is not too low. If scheduled, watering will be adjusted according to the tempearture then divided up into a number of passes to prevent run-off. Only one zone will be activated at a time to maintain sufficient water pressure.
+Both the watering staart time and the watering duration for each zone will be calculated by the plugin each day taking into account local weather conditions.
 
 ## Installation
 
@@ -45,15 +45,16 @@ Watering will be scheduled by the plugin to end just before the next sunrise, as
 ## Optional fields
 | Key | Description | Default |
 | --- | --- | --- |
-| `defaultDuration` | Default total watering time per zone (in minutes)  | `20` |
-| `cycles` | Number of cycles per zone (total watering time is spread between cycles)  | `2` |
-| `rainThreshold` | Rain threshold (in inches) at which watering will be cancelled | `0.05` |
-| `lowThreshold` | Temperature (°C) below which watering will be cancelled | `10` |
-| `highThreshold` | Temperature (°C) above which 100% of watering time will occur (reduced by `coldPercentage` otherwise) | `20` |
-| `reductionPercentage` | Percentage by which watering time will be reduced by if `highThreshold` has not been met | `50` |
-| `sunriseOffset` | Minutes before sunset that watering must finish before | `60` |
+| `enableSchedule` _(optional)_ | Whether or not to enable scheduling  | `true` |
+| `defaultDuration` _(optional)_ | Default total watering time per zone (in minutes)  | `10` |
+| `cycles` _(optional)_ | Number of cycles per zone (calculated watering time is spread between cycles)  | `2` |
+| `rainThreshold` _(optional)_ | Rain threshold (in inches) at which watering will be cancelled | `0.05` |
+| `lowThreshold` _(optional)_ | Temperature (°C) below which watering will be cancelled | `10` |
+| `highThreshold` _(optional)_ | Temperature (°C) above which the default watering time will be increased by `heatMultiplier` | `20` |
+| `heatMultiplier` _(optional)_ | Amount default watering time will be multiplied by if the max temperature is above `highThreshold`| `2` |
+| `sunriseOffset` _(optional)_ | Minutes before sunset to finish schedule by | `60` |
 | **(NEED TO IMPLEMENT)** `pollInterval` _(optional)_ | Time (in seconds) between device polls | `300` |
-| `listener` | Whether to start a listener to get real-time changes from the device | `false` |
+| `listener` _(optional)_ | Whether to start a listener to get real-time changes from the device | `false` |
 
 ### Additional options
 | Key | Description | Default |
@@ -93,3 +94,11 @@ Your API should be able to:
 ```
 /zone/state/INT_VALUE
 ```
+
+## Notes
+
+- The recieving device should have an automatic shutoff feature where the valve will automatically close after a period of time (e.g. 30 minutes) just incase the shutoff message was not recieved due to a connection issue
+
+- Watering needs vary widely as a result of a number of factors including sprinkler output, lawn type and local conditions. The plugin will schedule a watering cycle every day (assuming certain thresholds are not met) and may therefore be unsuitable if you need to limit watering to a certain number of days each week (unless you disable scheduling)
+
+- By default, turning a valve on manually within the app will turn it off after the number of minutes you have defined for `defaultDuration`. You can change this manual duration from within the Home app for each zone. This will **not** affect the watering time calculated by the plugin for the schedule
