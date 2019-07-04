@@ -4,18 +4,20 @@
 
 ## Description
 
-This [homebridge](https://github.com/nfarina/homebridge) plugin controls a web-based sprinkler system and exposes it to Apple's [HomeKit](http://www.apple.com/ios/home/). Using simple HTTP requests and the [Apixu API](https://www.apixu.com), the plugin schedules watering and allows you to monitor and turn on/off individual sprinkler zones.
+This [homebridge](https://github.com/nfarina/homebridge) plugin exposes a web-based sprinkler system to Apple's [HomeKit](http://www.apple.com/ios/home/). Using simple HTTP requests, the plugin allows you to turn on/off individual sprinkler zones. With the use of the [Apixu API](https://www.apixu.com), the plugin can also provide scheduling for your sprinkler system.
 
-Both the watering staart time and the watering duration for each zone will be calculated by the plugin each day taking into account local weather conditions.
+Both the watering start times and the watering durations can be (and are by default) calculated by the plugin each day, taking into account local weather conditions and user-specified values.
 
 ## Installation
 
 1. Install [homebridge](https://github.com/nfarina/homebridge#installation-details)
 2. Install this plugin: `npm install -g homebridge-web-sprinklers`
-3. Sign up to the [Apixu API](https://www.apixu.com)
+3. Sign up to the [Apixu API](https://www.apixu.com) (if you want scheduling)
 4. Update your `config.json` file
 
 ## Configuration
+
+#### Accessory with scheduling
 
 ```json
 "accessories": [
@@ -27,6 +29,19 @@ Both the watering staart time and the watering duration for each zone will be ca
        "country": "UK",
        "key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
        "zones": 8
+     }
+]
+```
+
+#### Accessory only
+
+```json
+"accessories": [
+     {
+       "accessory": "WebSprinklers",
+       "name": "Sprinklers",
+       "apiroute": "http://myurl.com",
+       "enableSchedule": false
      }
 ]
 ```
@@ -97,10 +112,10 @@ Your API should be able to:
 
 ## Notes
 
-- The recieving device should have an automatic shutoff feature where the valve will automatically close after a period of time (e.g. 30 minutes) just incase the shutoff message was not recieved due to a connection issue
+- The sprinkler controller should have an automatic shutoff feature where the valve will automatically close after a period of time (e.g. 30 minutes) so the valve is not left constantly open if there was an error recieving the turn off message
 
 - Watering needs vary widely as a result of a number of factors including sprinkler output, lawn type and local conditions. The plugin will schedule a watering cycle every day (assuming certain thresholds are not met) and may therefore be unsuitable if you need to limit watering to a certain number of days each week (unless you disable scheduling)
 
-- By default, turning a valve on manually within the app will turn it off after the number of minutes you have defined for `defaultDuration`. You can change this manual duration from within the Home app for each zone. This will **not** affect the watering time calculated by the plugin for the schedule
+- Turning a valve on manually within the app will not start a timer - you must manually disable the valve
 
 - Your [Apixu API](https://www.apixu.com) key grants you access to `10000` API calls per month. This should not be a concern as the plugin will only make an API call once per day (as well as when homebridge starts up)
