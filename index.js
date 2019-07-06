@@ -29,7 +29,7 @@ function WebSprinklers (log, config) {
 
   this.defaultDuration = config.defaultDuration || 10
   this.cycles = config.cycles || 2
-  this.rainThreshold = config.rainThreshold || 0.05
+  this.rainThreshold = config.rainThreshold || 0.3
   this.sunriseOffset = config.sunriseOffset || 60
   this.lowThreshold = config.lowThreshold || 10
   this.highThreshold = config.highThreshold || 20
@@ -182,7 +182,6 @@ WebSprinklers.prototype = {
             this.log('Starting water cycle (1/%s)', this.cycles)
             this._wateringCycle(1, 1)
           }.bind(this))
-          // Cancel schedule with `this.scheduledWateringTime.cancel()`
           this.log('Each zone will recieve %sx %s minute cycles', this.cycles, this.wateringDuration)
           this.log('Watering scheduled for: %s', scheduledTime.getDate() + '-' + (scheduledTime.getMonth() + 1) + '-' + scheduledTime.getFullYear() + ' ' + scheduledTime.getHours() + ':' + scheduledTime.getMinutes() + ':' + scheduledTime.getSeconds())
           this.log('Total watering time: %s minutes (finishes at %s)', totalTime, finishTime.getHours() + ':' + finishTime.getMinutes() + ':' + finishTime.getSeconds())
