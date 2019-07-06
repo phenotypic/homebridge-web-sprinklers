@@ -63,7 +63,7 @@ Both the watering start times and the watering durations can be (and are by defa
 | `enableSchedule` _(optional)_ | Whether or not to enable scheduling  | `true` |
 | `defaultDuration` _(optional)_ | Default total watering time per zone (in minutes)  | `10` |
 | `cycles` _(optional)_ | Number of cycles per zone (calculated watering time is spread between cycles)  | `2` |
-| `rainThreshold` _(optional)_ | Rain threshold (in inches) at which watering will be cancelled | `0.05` |
+| `rainThreshold` _(optional)_ | Rain threshold (in inches) at which watering will be cancelled | `0.3` |
 | `lowThreshold` _(optional)_ | Temperature (°C) below which watering will be cancelled | `10` |
 | `highThreshold` _(optional)_ | Temperature (°C) above which the default watering time will be increased by `heatMultiplier` | `20` |
 | `heatMultiplier` _(optional)_ | Amount default watering time will be multiplied by if the max temperature is above `highThreshold`| `2` |
