@@ -258,7 +258,6 @@ WebSprinklers.prototype = {
         .setCharacteristic(Characteristic.ValveType, 1)
       accessory.getCharacteristic(Characteristic.Active).updateValue(0)
       accessory.getCharacteristic(Characteristic.InUse).updateValue(0)
-      accessory.getCharacteristic(Characteristic.SetDuration).updateValue(this.defaultDuration * 60)
 
       accessory
         .getCharacteristic(Characteristic.Active)
