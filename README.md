@@ -98,7 +98,8 @@ Your API should be able to:
   {
     "zone": 2,
     "state": 0
-  }, {
+  },
+  {
     "zone": 3,
     "state": 0
   },
