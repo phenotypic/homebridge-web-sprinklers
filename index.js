@@ -115,8 +115,7 @@ WebSprinklers.prototype = {
         this.log('Device response: %s', responseBody)
         var json = JSON.parse(responseBody)
 
-        var count = this.zones + 1
-        for (var zone = 1; zone < count; zone++) {
+        for (var zone = 1; zone <= this.zones; zone++) {
           var value = json[zone - 1].state
           this.log('Zone %s | Updating state to: %s', zone, value)
           this.valveAccessory[zone].getCharacteristic(Characteristic.Active).updateValue(value)
@@ -277,8 +276,7 @@ WebSprinklers.prototype = {
       .setCharacteristic(Characteristic.FirmwareRevision, this.firmware)
 
     var services = [this.informationService, this.service]
-    var count = this.zones + 1
-    for (var zone = 1; zone < count; zone++) {
+    for (var zone = 1; zone <= this.zones; zone++) {
       var accessory = new Service.Valve('Zone', zone)
       accessory
         .setCharacteristic(Characteristic.ServiceLabelIndex, zone)
