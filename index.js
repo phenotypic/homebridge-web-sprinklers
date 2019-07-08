@@ -17,6 +17,7 @@ function WebSprinklers (log, config) {
   this.name = config.name
   this.apiroute = config.apiroute
   this.zones = config.zones || 3
+  this.pollInterval = config.pollInterval || 300
 
   this.listener = config.listener || false
   this.port = config.port || 2000
@@ -101,11 +102,37 @@ WebSprinklers.prototype = {
     })
   },
 
+  _getStatus: function (callback) {
+    var url = this.apiroute + '/status'
+    this.log('Getting status: %s', url)
+
+    this._httpRequest(url, '', 'GET', function (error, response, responseBody) {
+      if (error) {
+        this.log.warn('Error getting status: %s', error.message)
+        this.service.getCharacteristic(Characteristic.Active).updateValue(new Error('Polling failed'))
+        callback(error)
+      } else {
+        this.log('Device response: %s', responseBody)
+        var json = JSON.parse(responseBody)
+
+        var count = this.zones + 1
+        for (var zone = 1; zone < count; zone++) {
+          var value = json[zone - 1].state
+          this.log('Zone %s | Updating state to: %s', zone, value)
+          this.valveAccessory[zone].getCharacteristic(Characteristic.Active).updateValue(value)
+          this.valveAccessory[zone].getCharacteristic(Characteristic.InUse).updateValue(value)
+        }
+        callback()
+      }
+    }.bind(this))
+  },
+
   _httpHandler: function (zone, characteristic, value) {
     switch (characteristic) {
       case 'state':
         this.log('Zone %s | Updating %s to: %s', zone, characteristic, value)
-        this.valveAccessory[zone].setCharacteristic(Characteristic.Active, value)
+        this.valveAccessory[zone].getCharacteristic(Characteristic.Active).updateValue(value)
+        this.valveAccessory[zone].getCharacteristic(Characteristic.InUse).updateValue(value)
         break
       default:
         this.log.warn('Zone %s | Unknown characteristic "%s" with value "%s"', zone, characteristic, value)
@@ -267,12 +294,18 @@ WebSprinklers.prototype = {
       this.service.addLinkedService(accessory)
       services.push(accessory)
     }
-    this.log('Initialised %s zones', this.zones)
+    this.log('Initialized %s zones', this.zones)
 
     if (this.enableSchedule) {
       this.log('Calculating schedule...')
       this._calculateSchedule(function () {})
     }
+
+    this._getStatus(function () {})
+
+    setInterval(function () {
+      this._getStatus(function () {})
+    }.bind(this), this.pollInterval * 1000)
 
     return services
   }
