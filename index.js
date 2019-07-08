@@ -140,7 +140,7 @@ WebSprinklers.prototype = {
   },
 
   _calculateSchedule: function (callback) {
-    var url = 'http://api.apixu.com/v1/forecast.json?key=' + this.key + '&q=' + this.town + ',' + this.country + '&days=2'
+    var url = 'https://api.apixu.com/v1/forecast.json?key=' + this.key + '&q=' + this.town + ',' + this.country + '&days=2'
     this.log('Retrieving weather data for %s (%s)', this.town, this.country)
     this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
       if (error) {
