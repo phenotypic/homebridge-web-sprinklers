@@ -28,7 +28,7 @@ Both the watering start times and the watering durations can be (and are by defa
        "town": "London",
        "country": "UK",
        "key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-       "zones": 8
+       "zones": 3
      }
 ]
 ```
@@ -68,7 +68,7 @@ Both the watering start times and the watering durations can be (and are by defa
 | `highThreshold` _(optional)_ | Temperature (°C) above which the default watering time will be increased by `heatMultiplier` | `20` |
 | `heatMultiplier` _(optional)_ | Amount default watering time will be multiplied by if the max temperature is above `highThreshold`| `2` |
 | `sunriseOffset` _(optional)_ | Minutes before sunset to finish schedule by | `60` |
-| **(NEED TO IMPLEMENT)** `pollInterval` _(optional)_ | Time (in seconds) between device polls | `300` |
+| `pollInterval` _(optional)_ | Time (in seconds) between device polls | `300` |
 | `listener` _(optional)_ | Whether to start a listener to get real-time changes from the device | `false` |
 
 ### Additional options
@@ -88,14 +88,22 @@ Both the watering start times and the watering durations can be (and are by defa
 
 Your API should be able to:
 
-1. **(NEED TO IMPLEMENT)** Return JSON information when it receives `/status` where `zone` is the zone number:
+1. Return JSON information when it receives `/status`:
 ```
-{
-    "zone": INT_VALUE,
-    "zone": INT_VALUE,
-    "zone": INT_VALUE,
-    ...
-}
+[
+  {
+    "zone": 1,
+    "state": 0
+  },
+  {
+    "zone": 2,
+    "state": 0
+  }, {
+    "zone": 3,
+    "state": 0
+  },
+  ...
+]
 ```
 
 2. Set zone state when it receives:
