@@ -6,13 +6,13 @@
 
 This [homebridge](https://github.com/nfarina/homebridge) plugin exposes a web-based sprinkler system to Apple's [HomeKit](http://www.apple.com/ios/home/). Using simple HTTP requests, the plugin allows you to turn on/off individual sprinkler zones. With the use of the [Apixu API](https://www.apixu.com), the plugin can also provide scheduling for your sprinkler system.
 
-Both the watering start times and the watering durations can be (and are by default) calculated by the plugin each day, taking into account local weather conditions and user-specified values.
+Watering start times and the watering durations can be (and are by default) calculated by the plugin, taking into account local weather conditions and user-specified values.
 
 ## Installation
 
 1. Install [homebridge](https://github.com/nfarina/homebridge#installation-details)
 2. Install this plugin: `npm install -g homebridge-web-sprinklers`
-3. Sign up to the [Apixu API](https://www.apixu.com) (if you want scheduling)
+3. Sign up (for free) to the [Apixu API](https://www.apixu.com) and retrieve your API key (if you want scheduling)
 4. Update your `config.json` file
 
 ## Configuration
@@ -28,7 +28,8 @@ Both the watering start times and the watering durations can be (and are by defa
        "town": "London",
        "country": "UK",
        "key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-       "zones": 3
+       "zones": 4,
+       "restrictedDays": [2, 4, 6]
      }
 ]
 ```
@@ -63,6 +64,7 @@ Both the watering start times and the watering durations can be (and are by defa
 | `enableSchedule` _(optional)_ | Whether or not to enable scheduling  | `true` |
 | `defaultDuration` _(optional)_ | Default total watering time per zone (in minutes)  | `10` |
 | `cycles` _(optional)_ | Number of cycles per zone (calculated watering time is spread between cycles)  | `2` |
+| `restrictedDays` _(optional)_ | Days of the week when watering should not take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
 | `rainThreshold` _(optional)_ | Rain threshold (in inches) at which watering will be cancelled | `0.3` |
 | `lowThreshold` _(optional)_ | Temperature (°C) below which watering will be cancelled | `10` |
 | `highThreshold` _(optional)_ | Temperature (°C) above which the default watering time will be increased by `heatMultiplier` | `20` |
@@ -123,8 +125,6 @@ Your API should be able to:
 
 - The sprinkler controller itself should have an automatic shutoff feature where the valve will automatically close after a period of time (e.g. `30` minutes) so the valve is not left open if there was an error recieving the shut off message from the plugin
 
-- Watering needs vary widely as a result of a number of factors including sprinkler output, lawn type and local conditions. The plugin will schedule a watering cycle every day (assuming certain thresholds are not met), and may therefore be unsuitable if you need to limit watering to a certain number of days each week (unless you disable scheduling). Feel free to adjust the fields mentioned above or open an issue/pull request with feature propositions
-
-- Turning a valve on manually within the app will not start a timer - you must manually disable the valve
+- Watering needs vary widely as a result of a number of factors including sprinkler output, lawn type and local conditions. Feel free to adjust the fields mentioned in the [configuration section](#optional-fields) or open an issue/pull request for further feature propositions
 
 - Your [Apixu API](https://www.apixu.com) key grants you access to `10000` API calls per month (>`300` per day). This should not be a concern as the plugin will only make an API call once per day (as well as when homebridge starts up)
