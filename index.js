@@ -28,6 +28,7 @@ function WebSprinklers (log, config) {
   this.country = config.country
   this.key = config.key
 
+  this.restrictedDays = config.restrictedDays || []
   this.defaultDuration = config.defaultDuration || 10
   this.cycles = config.cycles || 2
   this.rainThreshold = config.rainThreshold || 0.3
@@ -203,18 +204,18 @@ WebSprinklers.prototype = {
         }
         var finishTime = new Date(scheduledTime.getTime() + totalTime * 60000)
 
-        if (todayRain < this.rainThreshold && tomorrowRain < this.rainThreshold && tomorrowMin > this.lowThreshold) {
+        if (!this.restrictedDays.includes(scheduledTime.getDay()) && todayRain < this.rainThreshold && tomorrowRain < this.rainThreshold && tomorrowMin > this.lowThreshold) {
           this.scheduledWateringTime = schedule.scheduleJob(scheduledTime, function () {
             this.log('Starting water cycle (1/%s)', this.cycles)
             this._wateringCycle(1, 1)
           }.bind(this))
           this.log('Each zone will recieve %sx %s minute cycles', this.cycles, this.wateringDuration)
-          this.log('Watering scheduled for: %s', scheduledTime.getDate() + '-' + (scheduledTime.getMonth() + 1) + '-' + scheduledTime.getFullYear() + ' ' + scheduledTime.getHours() + ':' + scheduledTime.getMinutes() + ':' + scheduledTime.getSeconds())
+          this.log('Watering scheduled for: %s', (scheduledTime.getMonth() + 1) + '-' + scheduledTime.getDate() + '-' + scheduledTime.getFullYear() + ' ' + scheduledTime.getHours() + ':' + scheduledTime.getMinutes() + ':' + scheduledTime.getSeconds())
           this.log('Total watering time: %s minutes (finishes at %s)', totalTime, finishTime.getHours() + ':' + finishTime.getMinutes() + ':' + finishTime.getSeconds())
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
           this.service.getCharacteristic(Characteristic.Active).updateValue(1)
         } else {
-          this.log('No schedule set: conditions not suitable for watering')
+          this.log('No schedule set, will recalculate at %s (%s)', scheduledTime.getHours() + ':' + scheduledTime.getMinutes() + ':' + scheduledTime.getSeconds(), (scheduledTime.getMonth() + 1) + '-' + scheduledTime.getDate() + '-' + scheduledTime.getFullYear())
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(0)
           this.service.getCharacteristic(Characteristic.Active).updateValue(0)
           schedule.scheduleJob(scheduledTime, function () {
