@@ -42,7 +42,7 @@ Watering start times and the watering durations can be (and are by default) calc
        "accessory": "WebSprinklers",
        "name": "Sprinklers",
        "apiroute": "http://myurl.com",
-       "enableSchedule": false
+       "scheduling": false
      }
 ]
 ```
@@ -61,7 +61,7 @@ Watering start times and the watering durations can be (and are by default) calc
 ## Optional fields
 | Key | Description | Default |
 | --- | --- | --- |
-| `enableSchedule` _(optional)_ | Whether or not to enable scheduling  | `true` |
+| `scheduling` _(optional)_ | Whether or not to enable scheduling  | `true` |
 | `defaultDuration` _(optional)_ | Default total watering time per zone (in minutes)  | `10` |
 | `cycles` _(optional)_ | Number of cycles per zone (calculated watering time is spread between cycles)  | `2` |
 | `restrictedDays` _(optional)_ | Days of the week when watering should not take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
@@ -125,6 +125,6 @@ Your API should be able to:
 
 - The sprinkler controller itself should have an automatic shutoff feature where the valve will automatically close after a period of time (e.g. `30` minutes) so the valve is not left open if there was an error recieving the shut off message from the plugin
 
-- Watering needs vary widely as a result of a number of factors including sprinkler output, lawn type and local conditions. Feel free to adjust the fields mentioned in the [configuration section](#optional-fields) or open an issue/pull request for further feature propositions
+- Watering needs vary widely as a result of a number of factors including sprinkler output volume, lawn type and local weather conditions. Feel free to adjust the fields mentioned in the [configuration section](#optional-fields) for scheduling better adapted to your needs or open an issue/pull request for further feature propositions
 
-- Your [Apixu API](https://www.apixu.com) key grants you access to `10000` API calls per month (>`300` per day). This should not be a concern as the plugin will only make an API call once per day (as well as when homebridge starts up)
+- Your [Apixu API](https://www.apixu.com) key grants you access to `10000` API calls per month (>`300` per day). The plugin will only make an API call once per day (as well as when homebridge starts up)
