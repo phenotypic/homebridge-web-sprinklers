@@ -1,4 +1,4 @@
-# homebridge-web-sprinklers _(Under Development)_
+# homebridge-web-sprinklers
 
 [![npm](https://img.shields.io/npm/v/homebridge-web-sprinklers.svg)](https://www.npmjs.com/package/homebridge-web-sprinklers) [![npm](https://img.shields.io/npm/dt/homebridge-web-sprinklers.svg)](https://www.npmjs.com/package/homebridge-web-sprinklers)
 
@@ -7,6 +7,8 @@
 This [homebridge](https://github.com/nfarina/homebridge) plugin exposes a web-based sprinkler system to Apple's [HomeKit](http://www.apple.com/ios/home/). Using simple HTTP requests, the plugin allows you to turn on/off individual sprinkler zones. With the use of the [Apixu API](https://www.apixu.com), the plugin can also provide scheduling for your sprinkler system.
 
 Watering start times and the watering durations can be (and are by default) calculated by the plugin, taking into account local weather conditions and user-specified values.
+
+Find examples for the sprinkler controller itself in the _examples_ folder.
 
 ## Installation
 
@@ -125,6 +127,6 @@ Your API should be able to:
 
 - The sprinkler controller itself should have an automatic shutoff feature where the valve will automatically close after a period of time (e.g. `30` minutes) so the valve is not left open if there was an error recieving the shut off message from the plugin
 
-- Watering needs vary widely as a result of a number of factors including sprinkler output volume, lawn type and local weather conditions. Feel free to adjust the fields mentioned in the [configuration section](#optional-fields) for scheduling better adapted to your needs or open an issue/pull request for further feature propositions
+- Watering needs vary widely as a result of a number of factors including sprinkler output volume, lawn type and local weather conditions. Feel free to adjust the fields mentioned [above](#optional-fields) for scheduling better adapted to your needs or open an issue/pull request for further feature propositions
 
 - Your [Apixu API](https://www.apixu.com) key grants you access to `10000` API calls per month (>`300` per day). The plugin will only make an API call once per day (as well as when homebridge starts up)
