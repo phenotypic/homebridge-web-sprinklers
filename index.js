@@ -225,12 +225,12 @@ WebSprinklers.prototype = {
             this._wateringCycle(1, 1)
           }.bind(this))
           this.log('Each zone will recieve %sx %s minute cycles', this.cycles, this.wateringDuration)
-          this.log('Watering starts at: %s (%s)', this._dateExtraction(finishTime, 'time'), this._dateExtraction(finishTime, 'date'))
+          this.log('Watering starts at: %s (%s)', this._dateExtraction(scheduledTime, 'time'), this._dateExtraction(scheduledTime, 'date'))
           this.log('Total watering time: %s minutes (finishes at %s)', totalTime, this._dateExtraction(finishTime, 'time'))
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
           this.service.getCharacteristic(Characteristic.Active).updateValue(1)
         } else {
-          this.log('No schedule set, will recalculate at %s (%s)', this._dateExtraction(finishTime, 'time'), this._dateExtraction(finishTime, 'date'))
+          this.log('No schedule set, will recalculate at %s (%s)', this._dateExtraction(scheduledTime, 'time'), this._dateExtraction(scheduledTime, 'date'))
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(0)
           this.service.getCharacteristic(Characteristic.Active).updateValue(0)
           schedule.scheduleJob(scheduledTime, function () {
