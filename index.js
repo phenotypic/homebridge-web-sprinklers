@@ -110,9 +110,10 @@ WebSprinklers.prototype = {
     this._httpRequest(url, '', 'GET', function (error, response, responseBody) {
       if (error) {
         this.log.warn('Error getting status: %s', error.message)
-        this.service.getCharacteristic(Characteristic.Active).updateValue(new Error('Polling failed'))
+        this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(new Error('Polling failed'))
         callback(error)
       } else {
+        this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
         this.log('Device response: %s', responseBody)
         var json = JSON.parse(responseBody)
 
@@ -227,11 +228,9 @@ WebSprinklers.prototype = {
           this.log('Each zone will recieve %sx %s minute cycles', this.cycles, this.wateringDuration)
           this.log('Watering starts at: %s (%s)', this._dateExtraction(scheduledTime, 'time'), this._dateExtraction(scheduledTime, 'date'))
           this.log('Total watering time: %s minutes (finishes at %s)', totalTime, this._dateExtraction(finishTime, 'time'))
-          this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
           this.service.getCharacteristic(Characteristic.Active).updateValue(1)
         } else {
           this.log('No schedule set, will recalculate at %s (%s)', this._dateExtraction(scheduledTime, 'time'), this._dateExtraction(scheduledTime, 'date'))
-          this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(0)
           this.service.getCharacteristic(Characteristic.Active).updateValue(0)
           schedule.scheduleJob(scheduledTime, function () {
             this.log('Calculating schedule...')
@@ -280,7 +279,7 @@ WebSprinklers.prototype = {
   },
 
   getServices: function () {
-    this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(0)
+    this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
     this.service.getCharacteristic(Characteristic.Active).updateValue(0)
     this.service.getCharacteristic(Characteristic.InUse).updateValue(0)
 
