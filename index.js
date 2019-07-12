@@ -139,6 +139,21 @@ WebSprinklers.prototype = {
     }
   },
 
+  _dateExtraction: function (value, format) {
+    var date = (value.getMonth() + 1) + '/' + value.getDate() + '/' + value.getFullYear()
+    var time = value.getHours() + ':' + value.getMinutes() + ':' + value.getSeconds()
+    switch (format) {
+      case 'date':
+        return date
+      case 'time':
+        return time
+      case 'full':
+        return time + ' ' + date
+      default:
+        return 'UNKNOWN FORMAT: ' + format
+    }
+  },
+
   _calculateSchedule: function (callback) {
     var url = 'https://api.apixu.com/v1/forecast.json?key=' + this.key + '&q=' + this.town + ',' + this.country + '&days=2'
     this.log('Retrieving weather data for %s (%s)', this.town, this.country)
@@ -210,12 +225,12 @@ WebSprinklers.prototype = {
             this._wateringCycle(1, 1)
           }.bind(this))
           this.log('Each zone will recieve %sx %s minute cycles', this.cycles, this.wateringDuration)
-          this.log('Watering scheduled for: %s', (scheduledTime.getMonth() + 1) + '-' + scheduledTime.getDate() + '-' + scheduledTime.getFullYear() + ' ' + scheduledTime.getHours() + ':' + scheduledTime.getMinutes() + ':' + scheduledTime.getSeconds())
-          this.log('Total watering time: %s minutes (finishes at %s)', totalTime, finishTime.getHours() + ':' + finishTime.getMinutes() + ':' + finishTime.getSeconds())
+          this.log('Watering starts at: %s (%s)', this._dateExtraction(finishTime, 'time'), this._dateExtraction(finishTime, 'date'))
+          this.log('Total watering time: %s minutes (finishes at %s)', totalTime, this._dateExtraction(finishTime, 'time'))
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
           this.service.getCharacteristic(Characteristic.Active).updateValue(1)
         } else {
-          this.log('No schedule set, will recalculate at %s (%s)', scheduledTime.getHours() + ':' + scheduledTime.getMinutes() + ':' + scheduledTime.getSeconds(), (scheduledTime.getMonth() + 1) + '-' + scheduledTime.getDate() + '-' + scheduledTime.getFullYear())
+          this.log('No schedule set, will recalculate at %s (%s)', this._dateExtraction(finishTime, 'time'), this._dateExtraction(finishTime, 'date'))
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(0)
           this.service.getCharacteristic(Characteristic.Active).updateValue(0)
           schedule.scheduleJob(scheduledTime, function () {
