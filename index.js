@@ -105,7 +105,7 @@ WebSprinklers.prototype = {
 
   _getStatus: function (callback) {
     var url = this.apiroute + '/status'
-    this.log('Getting status: %s', url)
+    this.log.debug('Getting status: %s', url)
 
     this._httpRequest(url, '', 'GET', function (error, response, responseBody) {
       if (error) {
