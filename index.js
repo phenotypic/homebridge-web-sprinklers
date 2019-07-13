@@ -114,12 +114,12 @@ WebSprinklers.prototype = {
         callback(error)
       } else {
         this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
-        this.log('Device response: %s', responseBody)
+        this.log.debug('Device response: %s', responseBody)
         var json = JSON.parse(responseBody)
 
         for (var zone = 1; zone <= this.zones; zone++) {
           var value = json[zone - 1].state
-          this.log('Zone %s | Updating state to: %s', zone, value)
+          this.log('Zone %s | Updated state to: %s', zone, value)
           this.valveAccessory[zone].getCharacteristic(Characteristic.Active).updateValue(value)
           this.valveAccessory[zone].getCharacteristic(Characteristic.InUse).updateValue(value)
         }
@@ -131,9 +131,9 @@ WebSprinklers.prototype = {
   _httpHandler: function (zone, characteristic, value) {
     switch (characteristic) {
       case 'state':
-        this.log('Zone %s | Updating %s to: %s', zone, characteristic, value)
         this.valveAccessory[zone].getCharacteristic(Characteristic.Active).updateValue(value)
         this.valveAccessory[zone].getCharacteristic(Characteristic.InUse).updateValue(value)
+        this.log('Zone %s | Updated %s to: %s', zone, characteristic, value)
         break
       default:
         this.log.warn('Zone %s | Unknown characteristic "%s" with value "%s"', zone, characteristic, value)
@@ -186,7 +186,7 @@ WebSprinklers.prototype = {
 
         // Catch JSON error then retry scheduling
         if (typeof todayDate === 'undefined') {
-          this.log.error('API JSON not parsed correctly')
+          this.log.error('API JSON not parsed correctly - please report')
           this.log.warn(responseBody)
           this.log.warn('Retrying in 1 minute...')
           setTimeout(() => {
@@ -265,13 +265,13 @@ WebSprinklers.prototype = {
 
   setActive: function (zone, value, callback) {
     var url = this.apiroute + '/' + zone + '/setState/' + value
-    this.log('Zone %s | Setting state: %s', zone, url)
+    this.log.debug('Zone %s | Setting state: %s', zone, url)
     this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
       if (error) {
         this.log.warn('Zone %s | Error setting state: %s', zone, error.message)
         callback(error)
       } else {
-        this.log('Zone %s | Successfully set state to %s', zone, value)
+        this.log('Zone %s | Set state to %s', zone, value)
         this.valveAccessory[zone].getCharacteristic(Characteristic.InUse).updateValue(value)
         callback()
       }
