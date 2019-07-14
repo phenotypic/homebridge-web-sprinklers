@@ -8,7 +8,7 @@ This [homebridge](https://github.com/nfarina/homebridge) plugin exposes a web-ba
 
 Watering start times and the watering durations can be (and are by default) calculated by the plugin, taking into account local weather conditions and user-specified values.
 
-Find examples for the sprinkler controller itself in the _examples_ folder.
+Find script samples for the valve controller in the _examples_ folder.
 
 ## Installation
 
