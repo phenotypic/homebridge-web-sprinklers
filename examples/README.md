@@ -1,6 +1,6 @@
 ## Description
 
-This script is meant to be flashed onto a NodeMCU connected to a relay board and interfaces with this plugin to expose the web-based sprinkler system. A maximum of 9 zones is supported by the script.
+This script is designed to interface with the plugin to expose the web-based sprinkler system. A maximum of 9 zones can be controlled using this script with the use of a relay board.
 
 ## Requirements
 
