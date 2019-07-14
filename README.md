@@ -44,7 +44,7 @@ Find examples for the sprinkler controller itself in the _examples_ folder.
        "accessory": "WebSprinklers",
        "name": "Sprinklers",
        "apiroute": "http://myurl.com",
-       "scheduling": false
+       "scheduling": "no"
      }
 ]
 ```
@@ -63,7 +63,7 @@ Find examples for the sprinkler controller itself in the _examples_ folder.
 ## Optional fields
 | Key | Description | Default |
 | --- | --- | --- |
-| `scheduling` _(optional)_ | Whether or not to enable scheduling  | `true` |
+| `scheduling` _(optional)_ | Whether or not to enable scheduling (`yes`/`no`)  | `yes` |
 | `defaultDuration` _(optional)_ | Default total watering time per zone (in minutes)  | `10` |
 | `cycles` _(optional)_ | Number of cycles per zone (calculated watering time is spread between cycles)  | `2` |
 | `restrictedDays` _(optional)_ | Days of the week when watering should not take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
