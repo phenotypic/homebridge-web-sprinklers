@@ -16,7 +16,7 @@ This script is designed to interface with the plugin to expose the web-based spr
 
 2. Connect the NodeMCU to the relay board
 
-3. Assuming that you already have [homebridge](https://github.com/nfarina/homebridge#installation) set up, the next thing you will have to do is install the plugin using the following command:
+3. Assuming that you already have [homebridge](https://github.com/nfarina/homebridge#installation) set up, the next thing you will have to do is install the plugin:
 ```
 npm install -g homebridge-web-sprinklers
 ```
