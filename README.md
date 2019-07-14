@@ -31,7 +31,8 @@ Find examples for the sprinkler controller itself in the _examples_ folder.
        "country": "UK",
        "key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
        "zones": 4,
-       "restrictedDays": [2, 4, 6]
+       "restrictedDays": [2, 4, 6],
+       "restrictedMonths": [0, 1, 10, 11]
      }
 ]
 ```
@@ -66,7 +67,8 @@ Find examples for the sprinkler controller itself in the _examples_ folder.
 | `scheduling` _(optional)_ | Whether or not to enable scheduling (`yes`/`no`)  | `yes` |
 | `defaultDuration` _(optional)_ | Default total watering time per zone (in minutes)  | `10` |
 | `cycles` _(optional)_ | Number of cycles per zone (calculated watering time is spread between cycles)  | `2` |
-| `restrictedDays` _(optional)_ | Days of the week when watering should not take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
+| `restrictedDays` _(optional)_ | Days of the week when watering should **not** take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
+| `restrictedMonths` _(optional)_ | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
 | `rainThreshold` _(optional)_ | Rain threshold (in inches) at which watering will be cancelled | `0.3` |
 | `lowThreshold` _(optional)_ | Temperature (°C) below which watering will be cancelled | `10` |
 | `highThreshold` _(optional)_ | Temperature (°C) above which the default watering time will be increased by `heatMultiplier` | `20` |
