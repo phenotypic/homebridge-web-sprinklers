@@ -23,7 +23,7 @@ function WebSprinklers (log, config) {
   this.port = config.port || 2000
   this.requestArray = ['state']
 
-  this.scheduling = config.scheduling || true
+  this.scheduling = config.scheduling || 'yes'
   this.town = config.town
   this.country = config.country
   this.key = config.key
@@ -309,7 +309,7 @@ WebSprinklers.prototype = {
     }
     this.log('Initialized %s zones', this.zones)
 
-    if (this.scheduling) {
+    if (this.scheduling === 'yes') {
       this.log('Calculating schedule...')
       this._calculateSchedule(function () {})
     }
