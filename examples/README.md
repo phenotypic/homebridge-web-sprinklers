@@ -39,4 +39,4 @@ npm install -g homebridge-web-sprinklers
 
 ## Wiring
 
-Wiring is fairly simple for relays but specifics will vary between sprinkler setups. Usually, sprinkler valves are 24V AC, so connect all valve common wires to one electrode and then the others to the relay board (connected to the other electrode)
+Most sprinkler valves run on AC power. You should connect all common wires from all zones to one of the AC source electrodes. Link together all relay common terminals and have them connect to the other AC source electrode. Connect the remaining individual zone wires to the _Normally Open_ terminals on the relay board. Finally, wire up the NodeMCU 3.3V pin to the relay board VCC and the ground pin to ground and then hook up each of the zone pins from the NodeMCU to the corresponding activation pins on the relay board.
