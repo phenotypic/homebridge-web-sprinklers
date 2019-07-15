@@ -67,12 +67,12 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `scheduling` _(optional)_ | Whether or not to enable scheduling (`yes`/`no`)  | `yes` |
 | `sunriseOffset` _(optional)_ | Minutes before sunset to finish watering by | `60` |
 | `defaultDuration` _(optional)_ | Default total watering time per zone (in minutes)  | `10` |
-| `cycles` _(optional)_ | Number of cycles per zone (calculated watering time is spread between cycles)  | `2` |
+| `cycles` _(optional)_ | Number of cycles per zone (watering time is spread between cycles)  | `2` |
 | `restrictedDays` _(optional)_ | Days of the week when watering should **not** take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
 | `restrictedMonths` _(optional)_ | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
 | `rainThreshold` _(optional)_ | Rain (in inches) above which watering will not take place | `0.3` |
 | `minTemperature` _(optional)_ | Temperature (°C) below which watering will not take place | `15` |
-| `adaptiveWatering` _(optional)_ | Whether the minutes difference between the `minTemperature` and the day's max temperature should be added to the watering time | `yes` |
+| `adaptiveWatering` _(optional)_ | Whether the difference between the `minTemperature` and the day's max temperature should be added to the watering time | `yes` |
 | `maxDuration` _(optional)_ | The highest number of minutes that `adaptiveWatering` can set | `30` |
 
 ### Additional options
