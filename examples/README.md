@@ -1,6 +1,6 @@
 ## Description
 
-This script is designed to interface with the plugin to expose the web-based sprinkler system. A maximum of 9 zones can be controlled using this script with the use of a relay board.
+This script is designed to interface with the plugin to expose the web-based sprinkler system with the use of a relay board. A maximum of 9 zones can be controlled using this script.
 
 ## Requirements
 
@@ -32,7 +32,7 @@ npm install -g homebridge-web-sprinklers
        "town": "London",
        "country": "UK",
        "key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-       "zones": 4
+       "zones": 6
      }
 ]
 ```
