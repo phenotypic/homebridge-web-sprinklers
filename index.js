@@ -23,20 +23,22 @@ function WebSprinklers (log, config) {
   this.port = config.port || 2000
   this.requestArray = ['state']
 
+  this.scheduling = config.scheduling || 'yes'
+  this.adaptiveWatering = config.adaptiveWatering || 'yes'
+
   this.town = config.town
   this.country = config.country
   this.key = config.key
-  this.scheduling = config.scheduling || 'yes'
 
-  this.restrictedDays = config.restrictedDays || []
-  this.restrictedMonths = config.restrictedMonths || []
   this.defaultDuration = config.defaultDuration || 10
   this.cycles = config.cycles || 2
+  this.restrictedDays = config.restrictedDays || []
+  this.restrictedMonths = config.restrictedMonths || []
   this.rainThreshold = config.rainThreshold || 0.3
   this.sunriseOffset = config.sunriseOffset || 60
-  this.lowThreshold = config.lowThreshold || 10
-  this.highThreshold = config.highThreshold || 20
-  this.heatMultiplier = config.heatMultiplier || 2
+  this.minTemperature = config.minTemperature || 15
+
+  this.maxDuration = config.maxDuration || 30
 
   this.wateringDuration = this.defaultDuration
   this.scheduledWateringTime = null
@@ -181,7 +183,6 @@ WebSprinklers.prototype = {
         var tomorrowMin = day2.day.mintemp_c
         var tomorrowMax = day2.day.maxtemp_c
 
-        // Catch JSON error then retry scheduling
         if (typeof todayDate === 'undefined') {
           this.log.error('API JSON not parsed correctly - please report')
           this.log.warn(responseBody)
@@ -200,9 +201,12 @@ WebSprinklers.prototype = {
         this.log('Tomorrow rain (in): %s', tomorrowRain)
 
         this.wateringDuration = this.defaultDuration
-        // Adjustments to watering duration should be made here:
-        if (tomorrowMax > this.highThreshold) {
-          this.wateringDuration = this.wateringDuration * this.heatMultiplier
+
+        if (this.adaptiveWatering === 'yes' && tomorrowMin > this.minTemperature) {
+          this.wateringDuration = this.wateringDuration + (tomorrowMax - this.minTemperature)
+          if (this.wateringDuration > this.maxDuration) {
+            this.wateringDuration = this.maxDuration
+          }
         }
 
         var totalTime = this.wateringDuration * this.zones
@@ -217,14 +221,14 @@ WebSprinklers.prototype = {
         }
         var finishTime = new Date(scheduledTime.getTime() + totalTime * 60000)
 
-        if (!this.restrictedDays.includes(scheduledTime.getDay()) && !this.restrictedMonths.includes(scheduledTime.getMonth()) && todayRain < this.rainThreshold && tomorrowRain < this.rainThreshold && tomorrowMin > this.lowThreshold) {
+        if (!this.restrictedDays.includes(scheduledTime.getDay()) && !this.restrictedMonths.includes(scheduledTime.getMonth()) && todayRain < this.rainThreshold && tomorrowRain < this.rainThreshold && tomorrowMin > this.minTemperature) {
           this.scheduledWateringTime = schedule.scheduleJob(scheduledTime, function () {
             this.log('Starting water cycle (1/%s)', this.cycles)
             this._wateringCycle(1, 1)
           }.bind(this))
-          this.log('Each zone will recieve %sx %s minute cycles', this.cycles, this.wateringDuration)
           this.log('Watering starts at: %s (%s)', this._dateExtraction(scheduledTime, 'time'), this._dateExtraction(scheduledTime, 'date'))
-          this.log('Total watering time: %s minutes (finishes at %s)', totalTime, this._dateExtraction(finishTime, 'time'))
+          this.log('Each zone will recieve %sx %s minute cycles (%s minutes total)', this.cycles, this.wateringDuration, this.wateringDuration * this.cycles)
+          this.log('Total watering time is %s minutes (finishes at %s)', totalTime, this._dateExtraction(finishTime, 'time'))
           this.service.getCharacteristic(Characteristic.Active).updateValue(1)
         } else {
           this.log('No schedule set, will recalculate at %s (%s)', this._dateExtraction(scheduledTime, 'time'), this._dateExtraction(scheduledTime, 'date'))
