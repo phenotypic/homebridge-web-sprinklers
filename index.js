@@ -23,10 +23,10 @@ function WebSprinklers (log, config) {
   this.port = config.port || 2000
   this.requestArray = ['state']
 
-  this.scheduling = config.scheduling || 'yes'
   this.town = config.town
   this.country = config.country
   this.key = config.key
+  this.scheduling = config.scheduling || 'yes'
 
   this.restrictedDays = config.restrictedDays || []
   this.restrictedMonths = config.restrictedMonths || []
@@ -142,15 +142,11 @@ WebSprinklers.prototype = {
   },
 
   _dateExtraction: function (value, format) {
-    var date = (value.getMonth() + 1) + '/' + value.getDate() + '/' + value.getFullYear()
-    var time = value.getHours() + ':' + value.getMinutes() + ':' + value.getSeconds()
     switch (format) {
       case 'date':
-        return date
+        return value.toLocaleString('en-US', { day: 'numeric', month: 'numeric', year: 'numeric' })
       case 'time':
-        return time
-      case 'full':
-        return time + ' ' + date
+        return value.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true })
       default:
         return 'UNKNOWN FORMAT: ' + format
     }
