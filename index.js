@@ -217,7 +217,7 @@ WebSprinklers.prototype = {
         }
         var finishTime = new Date(scheduledTime.getTime() + totalTime * 60000)
 
-        if (!this.restrictedDays.includes(scheduledTime.getDay()) && !this.restrictedMonths.includes(scheduledTime.getMonth()) && todayRain < this.rainThreshold && tomorrowRain < this.rainThreshold && tomorrowMin > this.lowThreshold) {
+        if (!this.restrictedDays.includes(scheduledTime.getDay() + 1) && !this.restrictedMonths.includes(scheduledTime.getMonth() + 1) && todayRain < this.rainThreshold && tomorrowRain < this.rainThreshold && tomorrowMin > this.lowThreshold) {
           this.scheduledWateringTime = schedule.scheduleJob(scheduledTime, function () {
             this.log('Starting water cycle (1/%s)', this.cycles)
             this._wateringCycle(1, 1)
