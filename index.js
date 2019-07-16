@@ -204,6 +204,7 @@ WebSprinklers.prototype = {
 
         if (this.adaptiveWatering === 'yes' && tomorrowMin > this.minTemperature) {
           this.wateringDuration = this.wateringDuration + (tomorrowMax - this.minTemperature)
+          this.wateringDuration = Math.round(this.wateringDuration * 10) / 10 // Round to handle floating point
           if (this.wateringDuration > this.maxDuration) {
             this.wateringDuration = this.maxDuration
           }
@@ -231,7 +232,7 @@ WebSprinklers.prototype = {
           this.log('Each zone will recieve %sx %s minute cycles (%s minutes total)', this.cycles, this.wateringDuration, this.wateringDuration * this.cycles)
           this.service.getCharacteristic(Characteristic.Active).updateValue(1)
         } else {
-          this.log('No schedule set, recalculation at %s (%s)', this._dateExtraction(scheduledTime, 'time'), this._dateExtraction(scheduledTime, 'date'))
+          this.log.warn('No schedule set, recalculation at %s (%s)', this._dateExtraction(scheduledTime, 'time'), this._dateExtraction(scheduledTime, 'date'))
           this.service.getCharacteristic(Characteristic.Active).updateValue(0)
           schedule.scheduleJob(scheduledTime, function () {
             this.log('Calculating schedule...')
