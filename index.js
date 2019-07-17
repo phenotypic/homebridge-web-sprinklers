@@ -168,20 +168,20 @@ WebSprinklers.prototype = {
       } else {
         this.log.debug(responseBody)
         var json = JSON.parse(responseBody)
-        var day1 = json.forecast.forecastday[0]
-        var day2 = json.forecast.forecastday[1]
+        var today = json.forecast.forecastday[0]
+        var tomorrow = json.forecast.forecastday[1]
 
-        var todayDate = day1.date
-        var todaySunrise = day1.astro.sunrise.substring(0, 5)
-        var tomorrowDate = day2.date
-        var tomorrowSunrise = day2.astro.sunrise.substring(0, 5)
+        var todayDate = today.date
+        var todaySunrise = today.astro.sunrise.substring(0, 5)
+        var tomorrowDate = tomorrow.date
+        var tomorrowSunrise = tomorrow.astro.sunrise.substring(0, 5)
 
-        var todayCondition = day1.day.condition.text
-        var todayRain = day1.day.totalprecip_in
-        var tomorrowCondition = day2.day.condition.text
-        var tomorrowRain = day2.day.totalprecip_in
-        var tomorrowMin = day2.day.mintemp_c
-        var tomorrowMax = day2.day.maxtemp_c
+        var todayCondition = today.day.condition.text
+        var todayRain = today.day.totalprecip_in
+        var tomorrowCondition = tomorrow.day.condition.text
+        var tomorrowRain = tomorrow.day.totalprecip_in
+        var tomorrowMin = tomorrow.day.mintemp_c
+        var tomorrowMax = tomorrow.day.maxtemp_c
 
         if (typeof todayDate === 'undefined') {
           this.log.error('API JSON not parsed correctly - please report')
