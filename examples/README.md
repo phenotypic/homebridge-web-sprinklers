@@ -28,7 +28,7 @@ npm install -g homebridge-web-sprinklers
      {
        "accessory": "WebSprinklers",
        "name": "Sprinklers",
-       "apiroute": "http://myurl.com",
+       "apiroute": "http://sprinklers.local",
        "town": "London",
        "country": "UK",
        "key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
