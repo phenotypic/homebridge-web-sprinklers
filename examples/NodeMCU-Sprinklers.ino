@@ -27,7 +27,9 @@ const char* mdns = "sprinklers"; //mDNS name
 //////////////////////////////////////////////////////////////
 
 const int zonePins[10] = {0, 16, 5, 4, 0, 2, 14, 12, 13, 15};
-int stateArray[zones + 1], timeArray[zones + 1], relayOn, relayOff, i;
+
+unsigned long timeArray[zones + 1];
+int stateArray[zones + 1], relayOn, relayOff, i;
 
 WiFiServer server(80);
 
