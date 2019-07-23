@@ -35,7 +35,7 @@ function WebSprinklers (log, config) {
   this.cycles = config.cycles || 2
   this.restrictedDays = config.restrictedDays || []
   this.restrictedMonths = config.restrictedMonths || []
-  this.rainThreshold = config.rainThreshold || 0.3
+  this.rainThreshold = config.rainThreshold || 0.03
   this.sunriseOffset = config.sunriseOffset || 60
   this.minTemperature = config.minTemperature || 15
 
