@@ -56,7 +56,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `accessory` | Must be `WebSprinklers` | N/A |
 | `name` | Name to appear in the Home app | N/A |
 | `apiroute` | Root URL of your device | N/A |
-| `town` | Your nearest town | N/A |
+| `town` | Your nearest town (can include spaces) | N/A |
 | `country` | Your country code | N/A |
 | `key` | Your [Apixu API](https://www.apixu.com) key  | N/A |
 | `zones` | Number of sprinkler zones  | `3` |
@@ -71,7 +71,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `cycles` _(optional)_ | Number of cycles per zone (watering time is spread between cycles)  | `2` |
 | `restrictedDays` _(optional)_ | Days of the week when watering should **not** take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
 | `restrictedMonths` _(optional)_ | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
-| `rainThreshold` _(optional)_ | Rain (in inches) above which watering will not take place | `0.3` |
+| `rainThreshold` _(optional)_ | Rain (in inches) above which watering will not take place | `0.03` |
 | `minTemperature` _(optional)_ | Temperature (°C) below which watering will not take place | `15` |
 | `adaptiveWatering` _(optional)_ | Whether the difference between the `minTemperature` and the day's max temperature should be added to the watering time | `yes` |
 | `maxDuration` _(optional)_ | The highest number of minutes that `adaptiveWatering` can set | `30` |
