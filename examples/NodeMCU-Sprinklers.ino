@@ -21,7 +21,7 @@
 const char* ssid = "SSID"; //Name of your network
 const char* password = "PASSWORD"; //Password for your network
 const int zones = 6; //Number of zones (max is 9)
-const int timeout = 30; //Automatic shutoff time (in minutes)
+const int timeout = 20; //Automatic shutoff time (in minutes)
 const char* relay = "LOW"; //Relay type (`HIGH` or `LOW`)
 const char* mdns = "sprinklers"; //mDNS name
 //////////////////////////////////////////////////////////////
