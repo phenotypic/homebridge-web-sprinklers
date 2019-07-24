@@ -64,32 +64,32 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 ## Optional fields
 | Key | Description | Default |
 | --- | --- | --- |
-| `zoneNames` _(optional)_ | Names for each of the sprinkler zones | N/A |
-| `scheduling` _(optional)_ | Whether or not to enable scheduling (`yes`/`no`) | `yes` |
-| `sunriseOffset` _(optional)_ | Minutes before sunset to finish watering by | `60` |
-| `defaultDuration` _(optional)_ | Default total watering time per zone (in minutes)  | `10` |
-| `cycles` _(optional)_ | Number of cycles per zone (watering time is spread between cycles)  | `2` |
-| `restrictedDays` _(optional)_ | Days of the week when watering should **not** take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
-| `restrictedMonths` _(optional)_ | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
-| `rainThreshold` _(optional)_ | Rain (in inches) above which watering will not take place | `0.03` |
-| `minTemperature` _(optional)_ | Temperature (°C) below which watering will not take place | `15` |
-| `adaptiveWatering` _(optional)_ | Whether the difference between the `minTemperature` and the day's max temperature should be added to the watering time | `yes` |
-| `maxDuration` _(optional)_ | The highest number of minutes that `adaptiveWatering` can set | `30` |
+| `zoneNames` | Names for each of the sprinkler zones | N/A |
+| `scheduling` | Whether or not to enable scheduling (`yes`/`no`) | `yes` |
+| `sunriseOffset` | Minutes before sunset to finish watering by | `60` |
+| `defaultDuration` | Default total watering time per zone (in minutes)  | `10` |
+| `cycles` | Number of cycles per zone (watering time is spread between cycles)  | `2` |
+| `restrictedDays` | Days of the week when watering should **not** take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
+| `restrictedMonths` | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
+| `rainThreshold` | Rain (in inches) above which watering will not take place | `0.03` |
+| `minTemperature` | Temperature (°C) below which watering will not take place | `15` |
+| `adaptiveWatering` | Whether the difference between the `minTemperature` and the day's max temperature should be added to the watering time | `yes` |
+| `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `30` |
 
 ### Additional options
 | Key | Description | Default |
 | --- | --- | --- |
-| `pollInterval` _(optional)_ | Time (in seconds) between device polls | `300` |
-| `listener` _(optional)_ | Whether to start a listener to get real-time changes from the device | `false` |
-| `timeout` _(optional)_ | Time (in milliseconds) until the accessory will be marked as _Not Responding_ if it is unreachable | `3000` |
-| `port` _(optional)_ | Port for your HTTP listener (if enabled) | `2000` |
-| `http_method` _(optional)_ | HTTP method used to communicate with the device | `GET` |
-| `username` _(optional)_ | Username if HTTP authentication is enabled | N/A |
-| `password` _(optional)_ | Password if HTTP authentication is enabled | N/A |
-| `model` _(optional)_ | Appears under the _Model_ field for the accessory | plugin |
-| `serial` _(optional)_ | Appears under the _Serial_ field for the accessory | apiroute |
-| `manufacturer` _(optional)_ | Appears under the _Manufacturer_ field for the accessory | author |
-| `firmware` _(optional)_ | Appears under the _Firmware_ field for the accessory | version |
+| `pollInterval` | Time (in seconds) between device polls | `300` |
+| `listener` | Whether to start a listener to get real-time changes from the device | `false` |
+| `timeout` | Time (in milliseconds) until the accessory will be marked as _Not Responding_ if it is unreachable | `3000` |
+| `port` | Port for your HTTP listener (if enabled) | `2000` |
+| `http_method` | HTTP method used to communicate with the device | `GET` |
+| `username` | Username if HTTP authentication is enabled | N/A |
+| `password` | Password if HTTP authentication is enabled | N/A |
+| `model` | Appears under the _Model_ field for the accessory | plugin |
+| `serial` | Appears under the _Serial_ field for the accessory | apiroute |
+| `manufacturer` | Appears under the _Manufacturer_ field for the accessory | author |
+| `firmware` | Appears under the _Firmware_ field for the accessory | version |
 
 ## API Interfacing
 
