@@ -58,7 +58,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `town` | Your nearest town (can include spaces) | N/A |
 | `country` | Your country code | N/A |
 | `key` | Your [Apixu API](https://www.apixu.com) key  | N/A |
-| `zones` | Number of sprinkler zones  | `3` |
+| `zones` | Number of sprinkler zones  | `6` |
 
 ## Optional fields
 | Key | Description | Default |
