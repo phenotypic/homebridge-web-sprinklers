@@ -31,7 +31,6 @@ Find script samples for the sprinkler controller in the _examples_ folder.
        "country": "UK",
        "key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
        "zones": 6,
-       "zoneNames": ["Front garden", "Back garden", "Left side", "Right side", "Pool area", "Greenery"],
        "restrictedDays": [2, 4, 6]
      }
 ]
@@ -64,7 +63,6 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 ## Optional fields
 | Key | Description | Default |
 | --- | --- | --- |
-| `zoneNames` | Names for each of the sprinkler zones | N/A |
 | `scheduling` | Whether or not to enable scheduling (`yes`/`no`) | `yes` |
 | `sunriseOffset` | Minutes before sunset to finish watering by | `60` |
 | `defaultDuration` | Default total watering time per zone (in minutes)  | `10` |
