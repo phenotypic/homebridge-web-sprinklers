@@ -16,7 +16,7 @@ function WebSprinklers (log, config) {
 
   this.name = config.name
   this.apiroute = config.apiroute
-  this.zones = config.zones || 3
+  this.zones = config.zones || 6
   this.pollInterval = config.pollInterval || 300
 
   this.listener = config.listener || false
@@ -30,7 +30,6 @@ function WebSprinklers (log, config) {
   this.country = config.country
   this.key = config.key
 
-  this.zoneNames = config.zoneNames || null
   this.defaultDuration = config.defaultDuration || 10
   this.cycles = config.cycles || 2
   this.restrictedDays = config.restrictedDays || []
@@ -302,10 +301,6 @@ WebSprinklers.prototype = {
 
       accessory.getCharacteristic(Characteristic.Active).updateValue(0)
       accessory.getCharacteristic(Characteristic.InUse).updateValue(0)
-      if (this.zoneNames != null) {
-        this.log.debug('Setting zone %s\'s name to: %s', zone, this.zoneNames[zone - 1])
-        accessory.getCharacteristic(Characteristic.ConfiguredName).updateValue(this.zoneNames[zone - 1])
-      }
 
       accessory
         .getCharacteristic(Characteristic.Active)
