@@ -156,7 +156,7 @@ WebSprinklers.prototype = {
 
   _calculateSchedule: function (callback) {
     var url = 'https://api.apixu.com/v1/forecast.json?key=' + this.key + '&q=' + this.town + ',' + this.country + '&days=2'
-    this.log('Retrieving weather data for %s (%s)', this.town, this.country)
+    this.log('Retrieving weather data for %s (%s)...', this.town, this.country)
     this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
       if (error) {
         this.log.warn('Error getting weather data: %s', error)
@@ -204,14 +204,17 @@ WebSprinklers.prototype = {
 
         if (this.adaptiveWatering === 'yes' && tomorrowMin > this.minTemperature) {
           this.wateringDuration = this.wateringDuration + (tomorrowMax - this.minTemperature)
-          this.wateringDuration = Math.round(this.wateringDuration * 10) / 10 // Round to handle floating point
+          this.wateringDuration = Math.round(this.wateringDuration * 10) / 10
           if (this.wateringDuration > this.maxDuration) {
             this.wateringDuration = this.maxDuration
           }
-        }
+        } // wateringDuration = total per zone
 
         var totalTime = this.wateringDuration * this.zones
+        totalTime = Math.round(totalTime * 10) / 10 // totalTime = total watering time for all zones
+
         this.wateringDuration = this.wateringDuration / this.cycles
+        this.wateringDuration = Math.round(this.wateringDuration * 100) / 100 // wateringDuration = watering time per cycle per zone
 
         var now = new Date()
         var todaySunriseDate = new Date(todayDate + 'T' + todaySunrise)
@@ -227,9 +230,9 @@ WebSprinklers.prototype = {
             this.log('Starting water cycle (1/%s)', this.cycles)
             this._wateringCycle(1, 1)
           }.bind(this))
-          this.log('Watering starts at: %s (%s)', this._dateExtraction(scheduledTime, 'time'), this._dateExtraction(scheduledTime, 'date'))
-          this.log('Total watering time: %s minutes (finishes at %s)', totalTime, this._dateExtraction(finishTime, 'time'))
           this.log('Each zone will recieve %sx %s minute cycles (%s minutes total)', this.cycles, this.wateringDuration, this.wateringDuration * this.cycles)
+          this.log('Watering start time: %s (%s)', this._dateExtraction(scheduledTime, 'time'), this._dateExtraction(scheduledTime, 'date'))
+          this.log('Watering end time: %s (%s minutes)', this._dateExtraction(finishTime, 'time'), totalTime)
           this.service.getCharacteristic(Characteristic.Active).updateValue(1)
         } else {
           this.log.warn('No schedule set, recalculation at %s (%s)', this._dateExtraction(scheduledTime, 'time'), this._dateExtraction(scheduledTime, 'date'))
