@@ -23,8 +23,8 @@ function WebSprinklers (log, config) {
   this.port = config.port || 2000
   this.requestArray = ['state']
 
-  this.scheduling = config.scheduling || 'yes'
-  this.adaptiveWatering = config.adaptiveWatering || 'yes'
+  this.disableScheduling = config.disableScheduling || false
+  this.disableAdaptiveWatering = config.disableAdaptiveWatering || false
 
   this.town = config.town
   this.country = config.country
@@ -202,7 +202,7 @@ WebSprinklers.prototype = {
 
         this.wateringDuration = this.defaultDuration
 
-        if (this.adaptiveWatering === 'yes' && tomorrowMin > this.minTemperature) {
+        if (!this.disableAdaptiveWatering && tomorrowMin > this.minTemperature) {
           this.wateringDuration = this.wateringDuration + (tomorrowMax - this.minTemperature)
           this.wateringDuration = Math.round(this.wateringDuration * 10) / 10
           if (this.wateringDuration > this.maxDuration) {
@@ -315,7 +315,7 @@ WebSprinklers.prototype = {
     }
     this.log('Initialized %s zones', this.zones)
 
-    if (this.scheduling === 'yes') {
+    if (!this.disableScheduling) {
       this.log('Calculating schedule...')
       this._calculateSchedule(function () {})
     }
