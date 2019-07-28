@@ -63,7 +63,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 ## Optional fields
 | Key | Description | Default |
 | --- | --- | --- |
-| `scheduling` | Whether or not to enable scheduling (`yes`/`no`) | `yes` |
+| `disableScheduling` | Whether to disable water scheduling | `false` |
 | `sunriseOffset` | Minutes before sunset to finish watering by | `60` |
 | `defaultDuration` | Default total watering time per zone (in minutes)  | `10` |
 | `cycles` | Number of cycles per zone (watering time is spread between cycles)  | `2` |
@@ -71,7 +71,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `restrictedMonths` | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
 | `rainThreshold` | Rain (in inches) above which watering will not take place | `0.03` |
 | `minTemperature` | Temperature (°C) below which watering will not take place | `15` |
-| `adaptiveWatering` | Whether the difference between the `minTemperature` and the day's max temperature should be added to the watering time | `yes` |
+| `disableAdaptiveWatering` | Whether to disable adaptive watering | `false` |
 | `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `30` |
 
 ### Additional options
