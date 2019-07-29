@@ -186,7 +186,7 @@ WebSprinklers.prototype = {
         if (typeof todayDate === 'undefined') {
           this.log.error('API JSON not parsed correctly - please report')
           this.log.warn(responseBody)
-          this.log.warn('Retrying in 1 minute...')
+          this.log('Retrying in 1 minute...')
           setTimeout(() => {
             this._calculateSchedule(function () {})
           }, 60000)
@@ -238,7 +238,6 @@ WebSprinklers.prototype = {
           this.log.warn('No schedule set, recalculation at %s (%s)', this._dateExtraction(scheduledTime, 'time'), this._dateExtraction(scheduledTime, 'date'))
           this.service.getCharacteristic(Characteristic.Active).updateValue(0)
           schedule.scheduleJob(scheduledTime, function () {
-            this.log('Calculating schedule...')
             this._calculateSchedule(function () {})
           }.bind(this))
         }
@@ -261,7 +260,6 @@ WebSprinklers.prototype = {
           this.log('Starting watering cycle (%s/%s)', nextCycle, this.cycles)
         } else {
           this.log('Watering finished')
-          this.log('Calculating schedule...')
           this._calculateSchedule(function () {})
         }
       }
@@ -316,7 +314,6 @@ WebSprinklers.prototype = {
     this.log('Initialized %s zones', this.zones)
 
     if (!this.disableScheduling) {
-      this.log('Calculating schedule...')
       this._calculateSchedule(function () {})
     }
 
