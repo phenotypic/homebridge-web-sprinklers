@@ -143,17 +143,6 @@ WebSprinklers.prototype = {
     }
   },
 
-  _dateExtraction: function (value, format) {
-    switch (format) {
-      case 'date':
-        return value.toLocaleString('en-US', { day: 'numeric', month: 'numeric', year: 'numeric' })
-      case 'time':
-        return value.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true })
-      default:
-        return 'UNKNOWN FORMAT: ' + format
-    }
-  },
-
   _calculateSchedule: function (callback) {
     var url = 'https://api.apixu.com/v1/forecast.json?key=' + this.key + '&q=' + this.town + ',' + this.country + '&days=2'
     this.log('Retrieving weather data for %s (%s)...', this.town, this.country)
@@ -231,11 +220,12 @@ WebSprinklers.prototype = {
             this._wateringCycle(1, 1)
           }.bind(this))
           this.log('Each zone will recieve %sx %s minute cycles (%s minutes total)', this.cycles, this.wateringDuration, this.wateringDuration * this.cycles)
-          this.log('Watering start time: %s (%s)', this._dateExtraction(scheduledTime, 'time'), this._dateExtraction(scheduledTime, 'date'))
-          this.log('Watering end time: %s (%s minutes)', this._dateExtraction(finishTime, 'time'), totalTime)
+          this.log('Total watering time: %s minutes', totalTime)
+          this.log('Watering start time: %s', scheduledTime.toLocaleString())
+          this.log('Watering end time: %s', finishTime.toLocaleString())
           this.service.getCharacteristic(Characteristic.Active).updateValue(1)
         } else {
-          this.log.warn('No schedule set, recalculation at %s (%s)', this._dateExtraction(scheduledTime, 'time'), this._dateExtraction(scheduledTime, 'date'))
+          this.log.warn('No schedule set, recalculation: %s', scheduledTime.toLocaleString())
           this.service.getCharacteristic(Characteristic.Active).updateValue(0)
           schedule.scheduleJob(scheduledTime, function () {
             this._calculateSchedule(function () {})
