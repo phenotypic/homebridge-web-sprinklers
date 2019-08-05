@@ -46,7 +46,7 @@ void setup() {
     pinMode(zonePins[i], OUTPUT);
     digitalWrite(zonePins[i], relayOff);
     stateArray[i] = 0;
-    timeArray[i] = 0;
+    timeArray[i] = millis();
   }
 
   Serial.begin(115200);
