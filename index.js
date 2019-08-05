@@ -40,7 +40,7 @@ function WebSprinklers (log, config) {
 
   this.maxDuration = config.maxDuration || 30
 
-  this.wateringDuration = this.defaultDuration
+  this.cycleDuration = this.defaultDuration
   this.scheduledWateringTime = null
   this.valveAccessory = []
 
@@ -169,8 +169,8 @@ WebSprinklers.prototype = {
         var todayRain = today.day.totalprecip_in
         var tomorrowCondition = tomorrow.day.condition.text
         var tomorrowRain = tomorrow.day.totalprecip_in
-        var tomorrowMin = tomorrow.day.mintemp_c
-        var tomorrowMax = tomorrow.day.maxtemp_c
+        var tomorrowMin = Math.round(tomorrow.day.mintemp_c)
+        var tomorrowMax = Math.round(tomorrow.day.maxtemp_c)
 
         if (typeof todayDate === 'undefined') {
           this.log.error('API JSON not parsed correctly - please report')
@@ -183,46 +183,43 @@ WebSprinklers.prototype = {
         }
 
         this.log('Today summary: %s', todayCondition)
-        this.log('Today rain (in): %s', todayRain)
+        this.log('Today rain: %s in', todayRain)
         this.log('Tomorrow summary: %s', tomorrowCondition)
-        this.log('Tomorrow min temp (°C): %s', tomorrowMin)
-        this.log('Tomorrow max temp (°C): %s', tomorrowMax)
-        this.log('Tomorrow rain (in): %s', tomorrowRain)
+        this.log('Tomorrow min temp: %s °C', tomorrowMin)
+        this.log('Tomorrow max temp: %s °C', tomorrowMax)
+        this.log('Tomorrow rain: %s in', tomorrowRain)
 
-        this.wateringDuration = this.defaultDuration
+        var zoneDuration = this.defaultDuration
 
         if (!this.disableAdaptiveWatering && tomorrowMin > this.minTemperature) {
-          this.wateringDuration = this.wateringDuration + (tomorrowMax - this.minTemperature)
-          this.wateringDuration = Math.round(this.wateringDuration * 10) / 10
-          if (this.wateringDuration > this.maxDuration) {
-            this.wateringDuration = this.maxDuration
+          zoneDuration = zoneDuration + (tomorrowMax - this.minTemperature)
+          if (zoneDuration > this.maxDuration) {
+            zoneDuration = this.maxDuration
           }
-        } // wateringDuration = total per zone
+        }
 
-        var totalTime = this.wateringDuration * this.zones
-        totalTime = Math.round(totalTime * 10) / 10 // totalTime = total watering time for all zones
+        var totalTime = zoneDuration * this.zones
 
-        this.wateringDuration = this.wateringDuration / this.cycles
-        this.wateringDuration = Math.round(this.wateringDuration * 100) / 100 // wateringDuration = watering time per cycle per zone
+        this.cycleDuration = zoneDuration / this.cycles
+        this.cycleDuration = Math.round(this.cycleDuration * 100) / 100
 
-        var now = new Date()
         var todaySunriseDate = new Date(todayDate + 'T' + todaySunrise)
         var tomorrowSunriseDate = new Date(tomorrowDate + 'T' + tomorrowSunrise)
         var scheduledTime = new Date(todaySunriseDate.getTime() - (totalTime + this.sunriseOffset) * 60000)
-        if (scheduledTime.getTime() < now.getTime()) {
+        if (scheduledTime.getTime() < Date.now()) {
           scheduledTime = new Date(tomorrowSunriseDate.getTime() - (totalTime + this.sunriseOffset) * 60000)
         }
         var finishTime = new Date(scheduledTime.getTime() + totalTime * 60000)
 
         if (!this.restrictedDays.includes(scheduledTime.getDay()) && !this.restrictedMonths.includes(scheduledTime.getMonth()) && todayRain < this.rainThreshold && tomorrowRain < this.rainThreshold && tomorrowMin > this.minTemperature) {
           this.scheduledWateringTime = schedule.scheduleJob(scheduledTime, function () {
-            this.log('Starting water cycle (1/%s)', this.cycles)
+            this.log('Starting water cycle 1/%s', this.cycles)
             this._wateringCycle(1, 1)
           }.bind(this))
-          this.log('Each zone will recieve %sx %s minute cycles (%s minutes total)', this.cycles, this.wateringDuration, this.wateringDuration * this.cycles)
+          this.log('Zones will recieve %sx %s minute cycles (%s minutes total)', this.cycles, this.cycleDuration, zoneDuration)
           this.log('Total watering time: %s minutes', totalTime)
-          this.log('Watering start time: %s', scheduledTime.toLocaleString())
-          this.log('Watering end time: %s', finishTime.toLocaleString())
+          this.log('Watering starts: %s', scheduledTime.toLocaleString())
+          this.log('Watering finishes: %s', finishTime.toLocaleString())
           this.service.getCharacteristic(Characteristic.Active).updateValue(1)
         } else {
           this.log.warn('No schedule set, recalculation: %s', scheduledTime.toLocaleString())
@@ -247,13 +244,13 @@ WebSprinklers.prototype = {
         var nextCycle = cycle + 1
         if (nextCycle <= this.cycles) {
           this._wateringCycle(1, nextCycle)
-          this.log('Starting watering cycle (%s/%s)', nextCycle, this.cycles)
+          this.log('Starting watering cycle %s/%s', nextCycle, this.cycles)
         } else {
           this.log('Watering finished')
           this._calculateSchedule(function () {})
         }
       }
-    }, this.wateringDuration * 60000)
+    }, this.cycleDuration * 60000)
   },
 
   setActive: function (zone, value, callback) {
