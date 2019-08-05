@@ -18,12 +18,12 @@
 */
 
 /////////////////// CHANGE THESE VALUES //////////////////////
-const char* ssid = "SSID"; //Name of your network
-const char* password = "PASSWORD"; //Password for your network
-const int zones = 6; //Number of zones (max is 9)
-const int timeout = 20; //Automatic shutoff time (in minutes)
-const String relay = "LOW"; //Relay type (`HIGH` or `LOW`)
-const char* mdns = "sprinklers"; //mDNS name
+const char* ssid = "SSID"; // Name of your network
+const char* password = "PASSWORD"; // Password for your network
+const int zones = 6; // Number of zones (max is 9)
+const int timeout = 20; // Automatic shutoff time (in minutes)
+const String relay = "LOW"; // Relay type (`HIGH` or `LOW`)
+const char* mdns = "sprinklers"; // mDNS name
 //////////////////////////////////////////////////////////////
 
 const int zonePins[10] = {0, 16, 5, 4, 0, 2, 14, 12, 13, 15};
