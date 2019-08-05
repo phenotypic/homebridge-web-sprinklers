@@ -34,9 +34,6 @@ int stateArray[zones + 1], relayOn, relayOff, i;
 WiFiServer server(80);
 
 void setup() {
-  Serial.begin(115200);
-  delay(10);
-
   if (relay.equals("LOW")) {
     relayOn = 0;
     relayOff = 1;
@@ -51,6 +48,9 @@ void setup() {
     stateArray[i] = 0;
     timeArray[i] = 0;
   }
+
+  Serial.begin(115200);
+  delay(10);
 
   // Connect to WiFi network
   Serial.println();
@@ -121,7 +121,7 @@ void loop() {
     int zone = request.substring(5, 6).toInt();
     int value = request.substring(16, 17).toInt();
     stateArray[zone] = value;
-    if (value == 1) {
+    if (value) {
       timeArray[zone] = millis();
       digitalWrite(zonePins[zone], relayOn);
     } else {
