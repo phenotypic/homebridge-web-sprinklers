@@ -18,6 +18,8 @@ When adaptive watering is enabled, total zone watering time will be decided betw
 
 E.g. If `defaultDuration` is `10`, `minTemperature` is `10` and the maximum forecasted temperature is `25`, the total watering time per zone will be: `10` + (`25` - `10`) = `25` minutes
 
+**Note:** If adaptive watering is disabled but scheduling remains active, each zone will be watered for the number of minutes specified in `defaultDuration`
+
 ## Installation
 
 1. Install [homebridge](https://github.com/nfarina/homebridge#installation-details)
