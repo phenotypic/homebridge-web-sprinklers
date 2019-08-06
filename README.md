@@ -70,7 +70,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `restrictedDays` | Days of the week when watering should **not** take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
 | `restrictedMonths` | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
 | `rainThreshold` | Rain (in inches) above which watering will not take place | `0.03` |
-| `minTemperature` | Temperature (°C) below which watering will not take place | `15` |
+| `minTemperature` | Temperature (°C) below which watering will not take place | `10` |
 | `disableAdaptiveWatering` | Whether to disable adaptive watering | `false` |
 | `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `30` |
 
@@ -124,10 +124,13 @@ Your API should be able to:
 /zone/state/INT_VALUE
 ```
 
+## Scheduling
+
+When scheduling is enabled, the plugin will ensure that watering finishes however many minutes before sunrise you specify in `sunriseOffset`. Therefore, the start time will vary daily as a result of changing sunrise times and may also be affected by individual zone watering times (see below).
+
+When adaptive watering is enabled, the difference between the maximum temperature for that day and the minimum watering temperature in the plugin will be added to the default watering duration for each zone. Thus, watering times will increase as a result of higher temperatures.
 ## Notes
 
 - The sprinkler controller itself should have an automatic shutoff feature where the valve will automatically close after a period of time (e.g. `30` minutes) so valves are not left open if there was an error recieving the shut off message from the plugin
-
-- Watering needs vary widely as a result of a number of factors including sprinkler output volume, lawn type and local weather conditions. Feel free to adjust the fields mentioned [above](#optional-fields) for scheduling better adapted to your needs or open an issue/pull request for further feature propositions
 
 - Your [Apixu API](https://www.apixu.com) key grants you access to `10000` API calls per month (>`300` per day). The plugin will only make an API call once per day (as well as when homebridge starts up)
