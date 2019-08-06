@@ -4,11 +4,19 @@
 
 ## Description
 
-This [homebridge](https://github.com/nfarina/homebridge) plugin exposes a web-based sprinkler system to Apple's [HomeKit](http://www.apple.com/ios/home/). Using simple HTTP requests, the plugin allows you to turn on/off individual sprinkler zones. With the use of the [Apixu API](https://www.apixu.com), the plugin can also provide scheduling for your sprinkler system.
-
-Watering start times and the watering durations can be (and are by default) calculated by the plugin, taking into account local weather conditions and user-specified values.
+This [homebridge](https://github.com/nfarina/homebridge) plugin exposes a web-based sprinkler system to Apple's [HomeKit](http://www.apple.com/ios/home/). Using HTTP requests, the plugin allows you to turn on/off individual sprinkler zones. With the use of the [Apixu API](https://www.apixu.com), the plugin can also provide water scheduling.
 
 Find script samples for the sprinkler controller in the _examples_ folder.
+
+## Scheduling
+
+When scheduling is enabled, the plugin will ensure that watering finishes however many minutes before sunrise you specify in `sunriseOffset`. Therefore, the start time will vary daily as a result of changing sunrise times and may also be affected by individual zone watering times (see below).
+
+E.g. If you have `2` zones and each zone will take `20` minutes to water, sunrise is at `07:40` and `sunriseOffset` is `60`, the watering start time will be: (`07:40` - `60`) - (`2` * `20`) = `05:00`
+
+When adaptive watering is enabled, total zone watering time will be decided between a certain range. The difference will be calculated between the maximum forcasted temperature for that day and `minTemperature`, then it will be added to `defaultDuration`. 
+
+E.g. If `defaultDuration` is `10`, `minTemperature` is `10` and the maximum forecasted temperature is `25`, the total watering time per zone will be: `10` + (`25` - `10`) = `25` minutes
 
 ## Installation
 
@@ -44,7 +52,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
        "accessory": "WebSprinklers",
        "name": "Sprinklers",
        "apiroute": "http://myurl.com",
-       "scheduling": "no"
+       "disableScheduling": true
      }
 ]
 ```
@@ -124,13 +132,8 @@ Your API should be able to:
 /zone/state/INT_VALUE
 ```
 
-## Scheduling
-
-When scheduling is enabled, the plugin will ensure that watering finishes however many minutes before sunrise you specify in `sunriseOffset`. Therefore, the start time will vary daily as a result of changing sunrise times and may also be affected by individual zone watering times (see below).
-
-When adaptive watering is enabled, the difference between the maximum temperature for that day and the minimum watering temperature in the plugin will be added to the default watering duration for each zone. Thus, watering times will increase as a result of higher temperatures.
 ## Notes
 
-- The sprinkler controller itself should have an automatic shutoff feature where the valve will automatically close after a period of time (e.g. `30` minutes) so valves are not left open if there was an error recieving the shut off message from the plugin
+- If you are using scheduling, the sprinkler controller should have an auto-shutoff feature where the valve will automatically close after a period of time (e.g. `30` minutes) has passed so that valves are not left open if there was an error recieving the off message from the plugin
 
-- Your [Apixu API](https://www.apixu.com) key grants you access to `10000` API calls per month (>`300` per day). The plugin will only make an API call once per day (as well as when homebridge starts up)
+- Your [Apixu API](https://www.apixu.com) key grants you access to `10000` API calls per month (>`300` per day). The plugin will only make an API call once per day (as well as when homebridge starts up) so you do not need to worry about running out of API calls.
