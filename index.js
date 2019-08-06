@@ -198,10 +198,9 @@ WebSprinklers.prototype = {
           }
         }
 
-        var totalTime = zoneDuration * this.zones
+        this.cycleDuration = Math.round(zoneDuration / this.cycles * 100) / 100
 
-        this.cycleDuration = zoneDuration / this.cycles
-        this.cycleDuration = Math.round(this.cycleDuration * 100) / 100
+        var totalTime = Math.round(this.cycleDuration * this.cycles * this.zones * 100) / 100
 
         var todaySunriseDate = new Date(todayDate + 'T' + todaySunrise)
         var tomorrowSunriseDate = new Date(tomorrowDate + 'T' + tomorrowSunrise)
@@ -216,7 +215,7 @@ WebSprinklers.prototype = {
             this.log('Starting water cycle 1/%s', this.cycles)
             this._wateringCycle(1, 1)
           }.bind(this))
-          this.log('Zones will recieve %sx %s minute cycles (%s minutes total)', this.cycles, this.cycleDuration, zoneDuration)
+          this.log('Zones will recieve %sx %s minute cycles (%s minutes total)', this.cycles, this.cycleDuration, Math.round(this.cycleDuration * this.cycles * 100) / 100)
           this.log('Total watering time: %s minutes', totalTime)
           this.log('Watering starts: %s', scheduledTime.toLocaleString())
           this.log('Watering finishes: %s', finishTime.toLocaleString())
