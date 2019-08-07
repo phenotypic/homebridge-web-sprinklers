@@ -74,7 +74,7 @@ E.g. If `defaultDuration` is `10`, `minTemperature` is `10` and the maximum fore
 | Key | Description | Default |
 | --- | --- | --- |
 | `disableScheduling` | Whether to disable water scheduling | `false` |
-| `sunriseOffset` | Minutes before sunset to finish watering by | `60` |
+| `sunriseOffset` | Minutes before sunset to finish watering by | `0` |
 | `defaultDuration` | Default total watering time per zone (in minutes)  | `10` |
 | `cycles` | Number of cycles per zone (watering time is spread between cycles)  | `2` |
 | `restrictedDays` | Days of the week when watering should **not** take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
