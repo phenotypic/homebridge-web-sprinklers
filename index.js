@@ -145,17 +145,16 @@ WebSprinklers.prototype = {
 
   _calculateSchedule: function (callback) {
     var url = 'https://api.apixu.com/v1/forecast.json?key=' + this.key + '&q=' + this.town + ',' + this.country + '&days=2'
-    this.log('Retrieving weather data for %s (%s)...', this.town, this.country)
+    this.log.debug('Retrieving weather data: %s', url)
     this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
       if (error) {
         this.log.warn('Error getting weather data: %s', error)
-        this.log.warn('Retrying in 1 minute...')
         setTimeout(() => {
           this._calculateSchedule(function () {})
         }, 60000)
         callback(error)
       } else {
-        this.log.debug(responseBody)
+        this.log.debug('Weather data: %s', responseBody)
         var json = JSON.parse(responseBody)
         var today = json.forecast.forecastday[0]
         var tomorrow = json.forecast.forecastday[1]
