@@ -155,7 +155,14 @@ WebSprinklers.prototype = {
         callback(error)
       } else {
         this.log.debug('Weather data: %s', responseBody)
-        var json = JSON.parse(responseBody)
+        try {
+          var json = JSON.parse(responseBody)
+        } catch (error) {
+          setTimeout(() => {
+            this._calculateSchedule(function () {})
+          }, 60000)
+          return this.log.error('Error parsing weather data: %s', error)
+        }
         var today = json.forecast.forecastday[0]
         var tomorrow = json.forecast.forecastday[1]
 
@@ -170,16 +177,6 @@ WebSprinklers.prototype = {
         var tomorrowRain = tomorrow.day.totalprecip_in
         var tomorrowMin = Math.round(tomorrow.day.mintemp_c)
         var tomorrowMax = Math.round(tomorrow.day.maxtemp_c)
-
-        if (typeof todayDate === 'undefined') {
-          this.log.error('API JSON not parsed correctly - please report')
-          this.log.warn(responseBody)
-          this.log('Retrying in 1 minute...')
-          setTimeout(() => {
-            this._calculateSchedule(function () {})
-          }, 60000)
-          return
-        }
 
         this.log('Today summary: %s', todayCondition)
         this.log('Today rain: %s in', todayRain)
