@@ -31,7 +31,7 @@ npm install -g homebridge-web-sprinklers
        "apiroute": "http://sprinklers.local",
        "latitude": 51.501562114913995,
        "longitude": -0.1473213074918931,
-       "key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+       "key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
        "zones": 6
      }
 ]
