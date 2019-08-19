@@ -26,15 +26,15 @@ function WebSprinklers (log, config) {
   this.disableScheduling = config.disableScheduling || false
   this.disableAdaptiveWatering = config.disableAdaptiveWatering || false
 
-  this.town = config.town
-  this.country = config.country
+  this.latitude = config.latitude
+  this.longitude = config.longitude
   this.key = config.key
 
   this.defaultDuration = config.defaultDuration || 10
   this.cycles = config.cycles || 2
   this.restrictedDays = config.restrictedDays || []
   this.restrictedMonths = config.restrictedMonths || []
-  this.rainThreshold = config.rainThreshold || 0.03
+  this.rainThreshold = config.rainThreshold || 2.5
   this.sunriseOffset = config.sunriseOffset || 0
   this.minTemperature = config.minTemperature || 10
 
@@ -144,7 +144,7 @@ WebSprinklers.prototype = {
   },
 
   _calculateSchedule: function (callback) {
-    var url = 'https://api.apixu.com/v1/forecast.json?key=' + this.key + '&q=' + this.town + ',' + this.country + '&days=2'
+    var url = 'https://api.darksky.net/forecast/' + this.key + '/' + this.latitude + ',' + this.longitude + '?exclude=currently,minutely,hourly,alerts,flags&units=si'
     this.log.debug('Retrieving weather data: %s', url)
     this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
       if (error) {
@@ -163,27 +163,30 @@ WebSprinklers.prototype = {
           }, 60000)
           return this.log.error('Error parsing weather data: %s', error)
         }
-        var today = json.forecast.forecastday[0]
-        var tomorrow = json.forecast.forecastday[1]
+        var today = json.daily.data[0]
+        var tomorrow = json.daily.data[1]
 
-        var todayDate = today.date
-        var todaySunrise = today.astro.sunrise.substring(0, 5)
-        var tomorrowDate = tomorrow.date
-        var tomorrowSunrise = tomorrow.astro.sunrise.substring(0, 5)
+        var todaySunrise = new Date(today.sunriseTime * 1000)
+        var tomorrowSunrise = new Date(tomorrow.sunriseTime * 1000)
 
-        var todayCondition = today.day.condition.text
-        var todayRain = today.day.totalprecip_in
-        var tomorrowCondition = tomorrow.day.condition.text
-        var tomorrowRain = tomorrow.day.totalprecip_in
-        var tomorrowMin = Math.round(tomorrow.day.mintemp_c)
-        var tomorrowMax = Math.round(tomorrow.day.maxtemp_c)
+        var todaySummary = today.summary
+        var todayRain = today.precipIntensity
+        var tomorrowSummary = tomorrow.summary
+        var tomorrowRain = tomorrow.precipIntensity
+        var tomorrowMin = Math.round(tomorrow.temperatureMin)
+        var tomorrowMax = Math.round(tomorrow.temperatureMax)
 
-        this.log('Today summary: %s', todayCondition)
-        this.log('Today rain: %s in', todayRain)
-        this.log('Tomorrow summary: %s', tomorrowCondition)
+        this.log('======================================================')
+        this.log('Today summary: %s', todaySummary)
+        this.log('Today sunrise: %s', todaySunrise.toLocaleString())
+        this.log('Today rain: %s mm', todayRain)
+        this.log('------------------------------------------------------')
+        this.log('Tomorrow summary: %s', tomorrowSummary)
+        this.log('Tomorrow sunrise: %s', tomorrowSunrise.toLocaleString())
         this.log('Tomorrow min temp: %s °C', tomorrowMin)
         this.log('Tomorrow max temp: %s °C', tomorrowMax)
-        this.log('Tomorrow rain: %s in', tomorrowRain)
+        this.log('Tomorrow rain: %s mm', tomorrowRain)
+        this.log('------------------------------------------------------')
 
         var zoneDuration = this.defaultDuration
 
@@ -198,11 +201,9 @@ WebSprinklers.prototype = {
 
         var totalTime = Math.round(this.cycleDuration * this.cycles * this.zones * 100) / 100
 
-        var todaySunriseDate = new Date(todayDate + 'T' + todaySunrise)
-        var tomorrowSunriseDate = new Date(tomorrowDate + 'T' + tomorrowSunrise)
-        var scheduledTime = new Date(todaySunriseDate.getTime() - (totalTime + this.sunriseOffset) * 60000)
+        var scheduledTime = new Date(todaySunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
         if (scheduledTime.getTime() < Date.now()) {
-          scheduledTime = new Date(tomorrowSunriseDate.getTime() - (totalTime + this.sunriseOffset) * 60000)
+          scheduledTime = new Date(tomorrowSunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
         }
         var finishTime = new Date(scheduledTime.getTime() + totalTime * 60000)
 
@@ -223,6 +224,7 @@ WebSprinklers.prototype = {
             this._calculateSchedule(function () {})
           }.bind(this))
         }
+        this.log('======================================================')
         callback()
       }
     }.bind(this))
