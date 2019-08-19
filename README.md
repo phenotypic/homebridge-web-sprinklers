@@ -37,8 +37,8 @@ E.g. If `defaultDuration` is `10`, `minTemperature` is `10` and the maximum fore
        "accessory": "WebSprinklers",
        "name": "Sprinklers",
        "apiroute": "http://myurl.com",
-       "town": "London",
-       "country": "UK",
+       "latitude": 51.501562114913995,
+       "londitude": -0.1473213074918931,
        "key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
        "zones": 6,
        "restrictedDays": [2, 4, 6]
@@ -65,8 +65,8 @@ E.g. If `defaultDuration` is `10`, `minTemperature` is `10` and the maximum fore
 | `accessory` | Must be `WebSprinklers` | N/A |
 | `name` | Name to appear in the Home app | N/A |
 | `apiroute` | Root URL of your device | N/A |
-| `town` | Your nearest town (can include spaces) | N/A |
-| `country` | Your country code | N/A |
+| `latitude` | Your decimal latitude | N/A |
+| `longitude` | Your decimal longitude | N/A |
 | `key` | Your [Apixu API](https://www.apixu.com) key  | N/A |
 | `zones` | Number of sprinkler zones  | `6` |
 
