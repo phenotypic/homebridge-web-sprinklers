@@ -30,7 +30,7 @@ function WebSprinklers (log, config) {
   this.longitude = config.longitude
   this.key = config.key
 
-  this.defaultDuration = config.defaultDuration || 10
+  this.defaultDuration = config.defaultDuration || 5
   this.cycles = config.cycles || 2
   this.restrictedDays = config.restrictedDays || []
   this.restrictedMonths = config.restrictedMonths || []
@@ -38,11 +38,13 @@ function WebSprinklers (log, config) {
   this.sunriseOffset = config.sunriseOffset || 0
   this.minTemperature = config.minTemperature || 10
 
-  this.maxDuration = config.maxDuration || 30
-
   this.cycleDuration = this.defaultDuration
+  this.maxDuration = config.maxDuration || 30
+  this.zonePercentages = config.zonePercentages || [100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+
   this.scheduledWateringTime = null
   this.valveAccessory = []
+  this.zoneDuration = []
 
   this.manufacturer = config.manufacturer || packageJson.author.name
   this.serial = config.serial || this.apiroute
@@ -173,8 +175,8 @@ WebSprinklers.prototype = {
         var todayRain = today.precipIntensity
         var tomorrowSummary = tomorrow.summary
         var tomorrowRain = tomorrow.precipIntensity
-        var tomorrowMin = Math.round(tomorrow.temperatureMin)
-        var tomorrowMax = Math.round(tomorrow.temperatureMax)
+        var tomorrowMin = tomorrow.temperatureMin
+        var tomorrowMax = tomorrow.temperatureMax
 
         this.log('======================================================')
         this.log('Today summary: %s', todaySummary)
@@ -188,18 +190,23 @@ WebSprinklers.prototype = {
         this.log('Tomorrow rain: %s mm', tomorrowRain)
         this.log('------------------------------------------------------')
 
-        var zoneDuration = this.defaultDuration
+        var zoneMaxDuration = this.defaultDuration
 
         if (!this.disableAdaptiveWatering && tomorrowMin > this.minTemperature) {
-          zoneDuration = zoneDuration + (tomorrowMax - this.minTemperature)
-          if (zoneDuration > this.maxDuration) {
-            zoneDuration = this.maxDuration
+          zoneMaxDuration = zoneMaxDuration + (tomorrowMax - this.minTemperature)
+          if (zoneMaxDuration > this.maxDuration) {
+            zoneMaxDuration = this.maxDuration
           }
         }
+        this.log.debug('Max zone duration: %s', zoneMaxDuration)
 
-        this.cycleDuration = Math.round(zoneDuration / this.cycles * 100) / 100
+        for (var zone = 1; zone <= this.zones; zone++) {
+          this.zoneDuration[zone] = ((zoneMaxDuration / this.cycles) / 100) * this.zonePercentages[zone - 1]
+          this.log.debug('Zone %s | %sx %s minute cycles', zone, this.cycles, this.zoneDuration[zone])
+        }
 
-        var totalTime = Math.round(this.cycleDuration * this.cycles * this.zones * 100) / 100
+        var totalTime = this.zoneDuration.reduce((a, b) => a + b, 0) * this.cycles
+        this.log.debug('Total watering time: %s minutes', totalTime)
 
         var scheduledTime = new Date(todaySunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
         if (scheduledTime.getTime() < Date.now()) {
@@ -212,8 +219,6 @@ WebSprinklers.prototype = {
             this.log('Starting water cycle 1/%s', this.cycles)
             this._wateringCycle(1, 1)
           }.bind(this))
-          this.log('Zones will recieve %sx %s minute cycles (%s minutes total)', this.cycles, this.cycleDuration, Math.round(this.cycleDuration * this.cycles * 100) / 100)
-          this.log('Total watering time: %s minutes', totalTime)
           this.log('Watering starts: %s', scheduledTime.toLocaleString())
           this.log('Watering finishes: %s', finishTime.toLocaleString())
           this.service.getCharacteristic(Characteristic.Active).updateValue(1)
@@ -247,7 +252,7 @@ WebSprinklers.prototype = {
           this._calculateSchedule(function () {})
         }
       }
-    }, this.cycleDuration * 60000)
+    }, this.zoneDuration[zone] * 60000)
   },
 
   setActive: function (zone, value, callback) {
