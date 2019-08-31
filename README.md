@@ -29,7 +29,8 @@ Find script samples for the sprinkler controller in the _examples_ folder.
        "londitude": -0.1473213074918931,
        "key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
        "zones": 6,
-       "restrictedDays": [2, 4, 6]
+       "restrictedDays": [2, 4, 6],
+       "zonePercentages": [100, 75, 100, 100, 50, 100]
      }
 ]
 ```
@@ -63,7 +64,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | --- | --- | --- |
 | `disableScheduling` | Whether to disable water scheduling | `false` |
 | `sunriseOffset` | Minutes before sunset to finish watering by | `0` |
-| `defaultDuration` | Default total watering time per zone (in minutes)  | `10` |
+| `defaultDuration` | Default total watering time per zone (in minutes)  | `5` |
 | `cycles` | Number of cycles per zone (watering time is spread between cycles)  | `2` |
 | `restrictedDays` | Days of the week when watering should **not** take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
 | `restrictedMonths` | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
@@ -71,6 +72,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `minTemperature` | Temperature (°C) below which watering will not take place | `10` |
 | `disableAdaptiveWatering` | Whether to disable adaptive watering | `false` |
 | `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `30` |
+| `zonePercentages` | Percentage of calculated zone watering time that a specific zone will receive | `100` |
 
 ### Additional options
 | Key | Description | Default |
@@ -93,7 +95,7 @@ When scheduling is enabled, the plugin will ensure that watering finishes howeve
 
 E.g. If you have `2` zones and each zone will take `20` minutes to water, sunrise is at `07:40` and `sunriseOffset` is `60`, the watering start time will be: (`07:40` - `60`) - (`2` * `20`) = `05:00`
 
-When adaptive watering is enabled, total zone watering time will be decided between a certain range. The difference will be calculated between the maximum forcasted temperature for that day and `minTemperature`, then it will be added to `defaultDuration`. 
+When adaptive watering is enabled, total zone watering time will be decided between a certain range. The difference will be calculated between the maximum forcasted temperature for that day and `minTemperature`, then it will be added to `defaultDuration`.
 
 E.g. If `defaultDuration` is `10`, `minTemperature` is `10` and the maximum forecasted temperature is `25`, the total watering time per zone will be: `10` + (`25` - `10`) = `25` minutes
 
