@@ -42,7 +42,6 @@ function WebSprinklers (log, config) {
   this.maxDuration = config.maxDuration || 30
   this.zonePercentages = config.zonePercentages || [100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
 
-  this.scheduledWateringTime = null
   this.valveAccessory = []
   this.zoneDuration = []
 
@@ -115,10 +114,10 @@ WebSprinklers.prototype = {
     this._httpRequest(url, '', 'GET', function (error, response, responseBody) {
       if (error) {
         this.log.warn('Error getting status: %s', error.message)
-        this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(new Error('Polling failed'))
+        this.service.getCharacteristic(Characteristic.Active).updateValue(new Error('Polling failed'))
         callback(error)
       } else {
-        this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
+        this.service.getCharacteristic(Characteristic.Active).updateValue(1)
         this.log.debug('Device response: %s', responseBody)
         var json = JSON.parse(responseBody)
 
@@ -208,24 +207,24 @@ WebSprinklers.prototype = {
         var totalTime = this.zoneDuration.reduce((a, b) => a + b, 0) * this.cycles
         this.log.debug('Total watering time: %s minutes', totalTime)
 
-        var scheduledTime = new Date(todaySunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
-        if (scheduledTime.getTime() < Date.now()) {
-          scheduledTime = new Date(tomorrowSunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
+        var startTime = new Date(todaySunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
+        if (startTime.getTime() < Date.now()) {
+          startTime = new Date(tomorrowSunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
         }
-        var finishTime = new Date(scheduledTime.getTime() + totalTime * 60000)
+        var finishTime = new Date(startTime.getTime() + totalTime * 60000)
 
-        if (!this.restrictedDays.includes(scheduledTime.getDay()) && !this.restrictedMonths.includes(scheduledTime.getMonth()) && todayRain < this.rainThreshold && tomorrowRain < this.rainThreshold && tomorrowMin > this.minTemperature) {
-          this.scheduledWateringTime = schedule.scheduleJob(scheduledTime, function () {
+        if (!this.restrictedDays.includes(startTime.getDay()) && !this.restrictedMonths.includes(startTime.getMonth()) && todayRain < this.rainThreshold && tomorrowRain < this.rainThreshold && tomorrowMin > this.minTemperature) {
+          schedule.scheduleJob(startTime, function () {
             this.log('Starting water cycle 1/%s', this.cycles)
             this._wateringCycle(1, 1)
           }.bind(this))
-          this.log('Watering starts: %s', scheduledTime.toLocaleString())
+          this.log('Watering starts: %s', startTime.toLocaleString())
           this.log('Watering finishes: %s', finishTime.toLocaleString())
-          this.service.getCharacteristic(Characteristic.Active).updateValue(1)
+          this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
         } else {
-          this.log.warn('No schedule set, recalculation: %s', scheduledTime.toLocaleString())
-          this.service.getCharacteristic(Characteristic.Active).updateValue(0)
-          schedule.scheduleJob(scheduledTime, function () {
+          this.log.warn('No schedule set, recalculation: %s', startTime.toLocaleString())
+          this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(0)
+          schedule.scheduleJob(startTime, function () {
             this._calculateSchedule(function () {})
           }.bind(this))
         }
@@ -271,8 +270,8 @@ WebSprinklers.prototype = {
   },
 
   getServices: function () {
-    this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
-    this.service.getCharacteristic(Characteristic.Active).updateValue(0)
+    this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(0)
+    this.service.getCharacteristic(Characteristic.Active).updateValue(1)
     this.service.getCharacteristic(Characteristic.InUse).updateValue(0)
 
     this.informationService = new Service.AccessoryInformation()
