@@ -149,4 +149,3 @@ Your API should be able to:
 - [ ] Set `Program Mode` to manual when user manually overrides valve
 
 - [ ] Update `Remaining Duration` accordingly - for main service or for each valve?
-- [ ] 
