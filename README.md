@@ -141,3 +141,12 @@ Your API should be able to:
 - If you are using scheduling, the sprinkler controller should have an auto-shutoff feature where the valve will automatically close after a period of time (e.g. `30` minutes) has passed so that valves are not left open if there was an error recieving the off message from the plugin
 
 - Your API key grants you access to `1000` API calls per day. The plugin will only make an API call once per day (as well as when homebridge starts up) so you do not need to worry about running out of API calls.
+
+## To-do
+
+- [ ] Ensure the main service is set to `In Use` when a valve is active
+
+- [ ] Set `Program Mode` to manual when user manually overrides valve
+
+- [ ] Update `Remaining Duration` accordingly - for main service or for each valve?
+- [ ] 
