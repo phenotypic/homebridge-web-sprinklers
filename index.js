@@ -197,15 +197,16 @@ WebSprinklers.prototype = {
             zoneMaxDuration = this.maxDuration
           }
         }
-        this.log('Max total zone duration: %s minutes', Math.round(zoneMaxDuration * 10) / 10)
+
+        this.log('Max zone duration: %s minutes', Math.round(zoneMaxDuration * 100) / 100)
 
         for (var zone = 1; zone <= this.zones; zone++) {
           this.zoneDuration[zone] = ((zoneMaxDuration / this.cycles) / 100) * this.zonePercentages[zone - 1]
-          this.log('Zone %s | %sx %s minute cycles', zone, this.cycles, Math.round(this.zoneDuration[zone] * 10) / 10)
+          this.log('Zone %s | %sx %s minute cycles', zone, this.cycles, Math.round(this.zoneDuration[zone] * 100) / 100)
         }
 
         var totalTime = this.zoneDuration.reduce((a, b) => a + b, 0) * this.cycles
-        this.log.debug('Total watering time: %s minutes', totalTime)
+        this.log('Total watering time: %s minutes', Math.round(totalTime * 100) / 100)
 
         var startTime = new Date(todaySunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
         if (startTime.getTime() < Date.now()) {
