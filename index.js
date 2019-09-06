@@ -177,7 +177,7 @@ WebSprinklers.prototype = {
         var tomorrowMin = tomorrow.temperatureMin
         var tomorrowMax = tomorrow.temperatureMax
 
-        this.log('======================================================')
+        this.log('------------------------------------------------------')
         this.log('Today summary: %s', todaySummary)
         this.log('Today sunrise: %s', todaySunrise.toLocaleString())
         this.log('Today rain: %s mm', todayRain)
@@ -192,16 +192,16 @@ WebSprinklers.prototype = {
         var zoneMaxDuration = this.defaultDuration
 
         if (!this.disableAdaptiveWatering && tomorrowMin > this.minTemperature) {
-          zoneMaxDuration = zoneMaxDuration + (tomorrowMax - this.minTemperature)
+          zoneMaxDuration = tomorrowMax - this.minTemperature
           if (zoneMaxDuration > this.maxDuration) {
             zoneMaxDuration = this.maxDuration
           }
         }
-        this.log.debug('Max zone duration: %s', zoneMaxDuration)
+        this.log('Max total zone duration: %s minutes', Math.round(zoneMaxDuration * 10) / 10)
 
         for (var zone = 1; zone <= this.zones; zone++) {
           this.zoneDuration[zone] = ((zoneMaxDuration / this.cycles) / 100) * this.zonePercentages[zone - 1]
-          this.log.debug('Zone %s | %sx %s minute cycles', zone, this.cycles, this.zoneDuration[zone])
+          this.log('Zone %s | %sx %s minute cycles', zone, this.cycles, Math.round(this.zoneDuration[zone] * 10) / 10)
         }
 
         var totalTime = this.zoneDuration.reduce((a, b) => a + b, 0) * this.cycles
@@ -228,7 +228,7 @@ WebSprinklers.prototype = {
             this._calculateSchedule(function () {})
           }.bind(this))
         }
-        this.log('======================================================')
+        this.log('------------------------------------------------------')
         callback()
       }
     }.bind(this))
