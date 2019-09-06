@@ -144,7 +144,7 @@ Your API should be able to:
 
 - I am open to suggestions about new ways to calculate watering times in adaptive watering rather than using the primitive calculation being used at the moment
 
-- The zone watering times displayed to you within homebridge are rounded to 1 d.p. just to make reading them easier due to JavaScript's [floating point math](https://www.youtube.com/watch?v=PZRI1IfStY0). The real watering times are not rounded
+- The watering times displayed to you within the homebridge log are rounded to 12 d.p. to make reading them easier due to JavaScript's [floating point math](https://www.youtube.com/watch?v=PZRI1IfStY0). The real watering times are not rounded
 
 - Your API key grants you access to `1000` API calls per day. The plugin will only make an API call once per day (as well as whenever homebridge starts up) so you shouldn't need to worry about running out of API calls
 
