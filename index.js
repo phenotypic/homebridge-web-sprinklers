@@ -34,7 +34,7 @@ function WebSprinklers (log, config) {
   this.cycles = config.cycles || 2
   this.restrictedDays = config.restrictedDays || []
   this.restrictedMonths = config.restrictedMonths || []
-  this.rainThreshold = config.rainThreshold || 2.5
+  this.rainThreshold = config.rainThreshold || 60
   this.sunriseOffset = config.sunriseOffset || 0
   this.minTemperature = config.minTemperature || 10
 
@@ -171,22 +171,22 @@ WebSprinklers.prototype = {
         var tomorrowSunrise = new Date(tomorrow.sunriseTime * 1000)
 
         var todaySummary = today.summary
-        var todayRain = today.precipIntensity
+        var todayRain = today.precipProbability * 100
         var tomorrowSummary = tomorrow.summary
-        var tomorrowRain = tomorrow.precipIntensity
+        var tomorrowRain = tomorrow.precipProbability * 100
         var tomorrowMin = tomorrow.temperatureMin
         var tomorrowMax = tomorrow.temperatureMax
 
         this.log('------------------------------------------------------')
         this.log('Today summary: %s', todaySummary)
         this.log('Today sunrise: %s', todaySunrise.toLocaleString())
-        this.log('Today rain: %s mm', todayRain)
+        this.log('Today rain: %s%', todayRain)
         this.log('------------------------------------------------------')
         this.log('Tomorrow summary: %s', tomorrowSummary)
         this.log('Tomorrow sunrise: %s', tomorrowSunrise.toLocaleString())
-        this.log('Tomorrow min temp: %s °C', tomorrowMin)
-        this.log('Tomorrow max temp: %s °C', tomorrowMax)
-        this.log('Tomorrow rain: %s mm', tomorrowRain)
+        this.log('Tomorrow min temp: %s°', tomorrowMin)
+        this.log('Tomorrow max temp: %s°', tomorrowMax)
+        this.log('Tomorrow rain: %s%', tomorrowRain)
         this.log('------------------------------------------------------')
 
         var zoneMaxDuration = this.defaultDuration
