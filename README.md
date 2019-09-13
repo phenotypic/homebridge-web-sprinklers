@@ -68,7 +68,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `cycles` | Number of cycles per zone (watering time is spread between cycles)  | `2` |
 | `restrictedDays` | Days of the week when watering should **not** take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
 | `restrictedMonths` | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
-| `rainThreshold` | Amount of rain (millimetres) above which watering will not take place | `2.5` |
+| `rainThreshold` | Percentage chance of rain above which watering will be cancelled | `60` |
 | `minTemperature` | Temperature (°C) below which watering will not take place | `10` |
 | `disableAdaptiveWatering` | Whether to disable adaptive watering and use `defaultDuration` instead | `false` |
 | `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `30` |
@@ -142,9 +142,9 @@ Your API should be able to:
 
 - If you are using scheduling, the sprinkler controller should have an onboard auto-shutoff feature where the valve will automatically close after a period of time (e.g. `30` minutes) has passed so that valves are not left open if there was an error recieving the off message from the plugin
 
-- I am open to suggestions about new ways to calculate watering times in adaptive watering rather than using the primitive calculation being used at the moment
+- I am open to suggestions about new ways to calculate watering times for adaptive watering in place of the simple calculation currently implemented
 
-- The watering times displayed to you within the homebridge log are rounded to 12 d.p. to make reading them easier due to JavaScript's [floating point math](https://www.youtube.com/watch?v=PZRI1IfStY0). The real watering times are not rounded
+- The watering times displayed to you within the homebridge log are rounded to 12 d.p. to make reading them easier due to JavaScript's [floating point calculations](https://www.youtube.com/watch?v=PZRI1IfStY0). The real watering times are not rounded
 
 - Your API key grants you access to `1000` API calls per day. The plugin will only make an API call once per day (as well as whenever homebridge starts up) so you shouldn't need to worry about running out of API calls
 
