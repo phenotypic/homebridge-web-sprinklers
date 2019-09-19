@@ -224,7 +224,7 @@ WebSprinklers.prototype = {
           }.bind(this))
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
         } else {
-          this.log.warn('No schedule set, recalculation: %s', startTime.toLocaleString())
+          this.log('No schedule set, recalculation: %s', startTime.toLocaleString())
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(0)
           schedule.scheduleJob(startTime, function () {
             this._calculateSchedule(function () {})
