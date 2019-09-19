@@ -198,15 +198,11 @@ WebSprinklers.prototype = {
           }
         }
 
-        this.log('Max zone duration: %s minutes', Math.round(zoneMaxDuration * 100) / 100)
-
         for (var zone = 1; zone <= this.zones; zone++) {
           this.zoneDuration[zone] = ((zoneMaxDuration / this.cycles) / 100) * this.zonePercentages[zone - 1]
-          this.log('Zone %s | %sx %s minute cycles', zone, this.cycles, Math.round(this.zoneDuration[zone] * 100) / 100)
         }
 
         var totalTime = this.zoneDuration.reduce((a, b) => a + b, 0) * this.cycles
-        this.log('Total watering time: %s minutes', Math.round(totalTime * 100) / 100)
 
         var startTime = new Date(todaySunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
         if (startTime.getTime() < Date.now()) {
@@ -215,12 +211,17 @@ WebSprinklers.prototype = {
         var finishTime = new Date(startTime.getTime() + totalTime * 60000)
 
         if (!this.restrictedDays.includes(startTime.getDay()) && !this.restrictedMonths.includes(startTime.getMonth()) && todayRain < this.rainThreshold && tomorrowRain < this.rainThreshold && tomorrowMin > this.minTemperature) {
+          this.log('Max zone duration: %s minutes', Math.round(zoneMaxDuration * 100) / 100)
+          for (zone = 1; zone <= this.zones; zone++) {
+            this.log('Zone %s | %sx %s minute cycles', zone, this.cycles, Math.round(this.zoneDuration[zone] * 100) / 100)
+          }
+          this.log('Total watering time: %s minutes', Math.round(totalTime * 100) / 100)
+          this.log('Watering starts: %s', startTime.toLocaleString())
+          this.log('Watering finishes: %s', finishTime.toLocaleString())
           schedule.scheduleJob(startTime, function () {
             this.log('Starting water cycle 1/%s', this.cycles)
             this._wateringCycle(1, 1)
           }.bind(this))
-          this.log('Watering starts: %s', startTime.toLocaleString())
-          this.log('Watering finishes: %s', finishTime.toLocaleString())
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
         } else {
           this.log.warn('No schedule set, recalculation: %s', startTime.toLocaleString())
