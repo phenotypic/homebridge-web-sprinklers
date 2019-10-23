@@ -68,7 +68,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `cycles` | Number of cycles per zone (watering time is spread between cycles)  | `2` |
 | `restrictedDays` | Days of the week when watering should **not** take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
 | `restrictedMonths` | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
-| `rainThreshold` | Percentage chance of rain above which watering will be cancelled | `60` |
+| `rainThreshold` | Percentage chance of rain above which watering will be cancelled | `40` |
 | `minTemperature` | Temperature (°C) below which watering will not take place | `10` |
 | `disableAdaptiveWatering` | Whether to disable adaptive watering and use `defaultDuration` instead | `false` |
 | `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `30` |
