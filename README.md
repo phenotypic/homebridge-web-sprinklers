@@ -26,7 +26,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
        "name": "Sprinklers",
        "apiroute": "http://myurl.com",
        "latitude": 51.501562114913995,
-       "londitude": -0.1473213074918931,
+       "longitude": -0.1473213074918931,
        "key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
        "zones": 6,
        "restrictedDays": [2, 4, 6],
@@ -63,6 +63,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | Key | Description | Default |
 | --- | --- | --- |
 | `disableScheduling` | Whether to disable water scheduling | `false` |
+| `synchronousWatering` | Whether to enable synchronous zone watering | `false` |
 | `sunriseOffset` | Minutes before sunset to finish watering by | `0` |
 | `defaultDuration` | Default total watering time per zone (minutes) when adaptive watering is disabled | `5` |
 | `cycles` | Number of cycles per zone (watering time is spread between cycles)  | `2` |
@@ -91,17 +92,19 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 
 ## Scheduling
 
-When scheduling is enabled, the plugin will schedule watering so that it will finish however many minutes before sunrise you specify in `sunriseOffset`. Therefore, the start time will vary daily as a result of changing sunrise times and may also be affected by individual zone watering times (see [adaptive watering](#adaptive-watering)).
+When scheduling is enabled, the plugin will schedule watering so that it finishes however many minutes before sunrise specified `sunriseOffset`.
 
-E.g. If you have `2` zones, each zone will take `20` minutes to water, sunrise is at `07:40` and `sunriseOffset` is `60`, the watering start time will be: (`07:40` - `60`) - (`2` * `20`) = `05:00`
+When `synchronousWatering` is enabled, scheduled zone watering cycles are allowed to overlap. This is NOT enabled by default as most systems are incapable of supplying sufficient pressure to water multiple zones simultaneously.
+
+Start times will vary daily as a result of changing sunrise times.
 
 ## Adaptive watering
 
-When adaptive watering is enabled, the zone watering duration will be calculates simply as the difference between your specified minimum watering temperature and the next day's forecasted maximum temperature.
+When adaptive watering is enabled, the zone watering duration will be calculates simply as a percentage (`100` by default, unless specified in `zonePercentages`) of the difference between your specified minimum watering temperature and the next day's forecasted maximum temperature.
 
-E.g. If `minTemperature` is `10` and the maximum forecasted temperature is `25`, the total watering time per zone will be: `25` - `10` = `15` minutes
+E.g. If `minTemperature` is `10`, and the maximum forecasted temperature is `25`, the total watering time per zone will be: `25` - `10` = `15` minutes
 
-**Note:** If adaptive watering is disabled but scheduling remains active, each zone will be watered for the number of minutes specified in `defaultDuration`
+If adaptive watering is disabled, but scheduling remains enabled, each zone will be watered for a percentage (`100` by default, unless specified in `zonePercentages`) of the number of minutes specified in `defaultDuration`
 
 ## API Interfacing
 
@@ -135,16 +138,16 @@ Your API should be able to:
 
 1. Update `state` following a manual zone override by messaging the listen server:
 ```
-/zone/state/INT_VALUE
+/ZONE_INT_VALUE/state/INT_VALUE
 ```
 
 ## Notes
 
-- If you are using scheduling, the sprinkler controller should have an onboard auto-shutoff feature where the valve will automatically close after a period of time (e.g. `30` minutes) has passed so that valves are not left open if there was an error recieving the off message from the plugin
+- If you are using scheduling, the sprinkler controller should have an onboard auto-shutoff feature where the valve will automatically close after a period of time (e.g. `30` minutes) has passed so that valves are not left open if there was an error receiving the 'off message' from the plugin
 
 - I am open to suggestions about new ways to calculate watering times for adaptive watering in place of the simple calculation currently implemented
 
-- The watering times displayed to you within the homebridge log are rounded to 12 d.p. to make reading them easier due to JavaScript's [floating point calculations](https://www.youtube.com/watch?v=PZRI1IfStY0). The real watering times are not rounded
+- The watering times displayed to you within the homebridge log are rounded to make reading them easier due to JavaScript's [floating point calculations](https://www.youtube.com/watch?v=PZRI1IfStY0). The real watering times are not rounded
 
 - Your API key grants you access to `1000` API calls per day. The plugin will only make an API call once per day (as well as whenever homebridge starts up) so you shouldn't need to worry about running out of API calls
 
