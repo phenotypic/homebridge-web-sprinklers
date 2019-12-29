@@ -25,22 +25,23 @@ function WebSprinklers (log, config) {
 
   this.disableScheduling = config.disableScheduling || false
   this.disableAdaptiveWatering = config.disableAdaptiveWatering || false
+  this.synchronousWatering = config.synchronousWatering || false
 
   this.latitude = config.latitude
   this.longitude = config.longitude
   this.key = config.key
 
-  this.defaultDuration = config.defaultDuration || 5
-  this.cycles = config.cycles || 2
   this.restrictedDays = config.restrictedDays || []
   this.restrictedMonths = config.restrictedMonths || []
   this.rainThreshold = config.rainThreshold || 40
   this.sunriseOffset = config.sunriseOffset || 0
   this.minTemperature = config.minTemperature || 10
 
+  this.defaultDuration = config.defaultDuration || 5
+  this.cycles = config.cycles || 2
   this.cycleDuration = this.defaultDuration
   this.maxDuration = config.maxDuration || 30
-  this.zonePercentages = config.zonePercentages || [100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+  this.zonePercentages = config.zonePercentages || new Array(this.zones).fill(100)
 
   this.valveAccessory = []
   this.zoneDuration = []
@@ -171,22 +172,22 @@ WebSprinklers.prototype = {
         var tomorrowSunrise = new Date(tomorrow.sunriseTime * 1000)
 
         var todaySummary = today.summary
-        var todayRain = today.precipProbability * 100
+        var todayRain = Math.round(today.precipProbability * 100)
         var tomorrowSummary = tomorrow.summary
-        var tomorrowRain = tomorrow.precipProbability * 100
+        var tomorrowRain = Math.round(tomorrow.precipProbability * 100)
         var tomorrowMin = tomorrow.temperatureMin
         var tomorrowMax = tomorrow.temperatureMax
 
         this.log('------------------------------------------------------')
         this.log('Today summary: %s', todaySummary)
         this.log('Today sunrise: %s', todaySunrise.toLocaleString())
-        this.log('Today rain: %s%', todayRain)
+        this.log('Today rain probability: %s%', todayRain)
         this.log('------------------------------------------------------')
         this.log('Tomorrow summary: %s', tomorrowSummary)
         this.log('Tomorrow sunrise: %s', tomorrowSunrise.toLocaleString())
         this.log('Tomorrow min temp: %s°', tomorrowMin)
         this.log('Tomorrow max temp: %s°', tomorrowMax)
-        this.log('Tomorrow rain: %s%', tomorrowRain)
+        this.log('Tomorrow rain probability: %s%', tomorrowRain)
         this.log('------------------------------------------------------')
 
         var zoneMaxDuration = this.defaultDuration
@@ -202,7 +203,12 @@ WebSprinklers.prototype = {
           this.zoneDuration[zone] = ((zoneMaxDuration / this.cycles) / 100) * this.zonePercentages[zone - 1]
         }
 
-        var totalTime = this.zoneDuration.reduce((a, b) => a + b, 0) * this.cycles
+        var totalTime
+        if (this.synchronousWatering) {
+          totalTime = Math.max.apply(null, this.zoneDuration)
+        } else {
+          totalTime = this.zoneDuration.reduce((a, b) => a + b, 0) * this.cycles
+        }
 
         var startTime = new Date(todaySunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
         if (startTime.getTime() < Date.now()) {
@@ -211,16 +217,23 @@ WebSprinklers.prototype = {
         var finishTime = new Date(startTime.getTime() + totalTime * 60000)
 
         if (!this.restrictedDays.includes(startTime.getDay()) && !this.restrictedMonths.includes(startTime.getMonth()) && todayRain < this.rainThreshold && tomorrowRain < this.rainThreshold && tomorrowMin > this.minTemperature) {
-          this.log('Max zone duration: %s minutes', Math.round(zoneMaxDuration * 100) / 100)
+          this.log('Watering mode: %s', this.synchronousWatering ? 'synchronous' : 'asynchronous')
           for (zone = 1; zone <= this.zones; zone++) {
-            this.log('Zone %s | %sx %s minute cycles', zone, this.cycles, Math.round(this.zoneDuration[zone] * 100) / 100)
+            this.log('Zone %s | %sx %s minute cycles', zone, this.cycles, Math.round(this.zoneDuration[zone]))
           }
-          this.log('Total watering time: %s minutes', Math.round(totalTime * 100) / 100)
+          this.log('Total watering time: %s minutes', Math.round(totalTime))
           this.log('Watering starts: %s', startTime.toLocaleString())
           this.log('Watering finishes: %s', finishTime.toLocaleString())
           schedule.scheduleJob(startTime, function () {
-            this.log('Starting water cycle 1/%s', this.cycles)
-            this._wateringCycle(1, 1)
+            if (this.synchronousWatering) {
+              for (var zone = 1; zone <= this.zones; zone++) {
+                this.log('Zone %s | Starting water cycle 1/%s', zone, this.cycles)
+                this._synchronousWateringCycle(zone, 1)
+              }
+            } else {
+              this.log('Starting water cycle 1/%s', this.cycles)
+              this._asynchronousWateringCycle(1, 1)
+            }
           }.bind(this))
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
         } else {
@@ -236,22 +249,37 @@ WebSprinklers.prototype = {
     }.bind(this))
   },
 
-  _wateringCycle: function (zone, cycle) {
+  _asynchronousWateringCycle: function (zone, cycle) {
     this.valveAccessory[zone].setCharacteristic(Characteristic.Active, 1)
     setTimeout(() => {
       this.valveAccessory[zone].setCharacteristic(Characteristic.Active, 0)
       var nextZone = zone + 1
       if (nextZone <= this.zones) {
-        this._wateringCycle(nextZone, cycle)
+        this._asynchronousWateringCycle(nextZone, cycle)
       } else {
         var nextCycle = cycle + 1
         if (nextCycle <= this.cycles) {
-          this._wateringCycle(1, nextCycle)
+          this._asynchronousWateringCycle(1, nextCycle)
           this.log('Starting watering cycle %s/%s', nextCycle, this.cycles)
         } else {
           this.log('Watering finished')
           this._calculateSchedule(function () {})
         }
+      }
+    }, this.zoneDuration[zone] * 60000)
+  },
+
+  _synchronousWateringCycle: function (zone, cycle) {
+    this.valveAccessory[zone].setCharacteristic(Characteristic.Active, 1)
+    setTimeout(() => {
+      this.valveAccessory[zone].setCharacteristic(Characteristic.Active, 0)
+      var nextCycle = cycle + 1
+      if (nextCycle <= this.cycles) {
+        this._synchronousWateringCycle(zone, nextCycle)
+        this.log('Zone %s | Starting watering cycle %s/%s', zone, nextCycle, this.cycles)
+      } else {
+        this.log('Zone %s | Watering finished', zone)
+        this._calculateSchedule(function () {})
       }
     }, this.zoneDuration[zone] * 60000)
   },
@@ -289,9 +317,6 @@ WebSprinklers.prototype = {
       accessory
         .setCharacteristic(Characteristic.ServiceLabelIndex, zone)
         .setCharacteristic(Characteristic.ValveType, 1)
-
-      accessory.getCharacteristic(Characteristic.Active).updateValue(0)
-      accessory.getCharacteristic(Characteristic.InUse).updateValue(0)
 
       accessory
         .getCharacteristic(Characteristic.Active)
