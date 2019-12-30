@@ -63,7 +63,6 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | Key | Description | Default |
 | --- | --- | --- |
 | `disableScheduling` | Whether to disable water scheduling | `false` |
-| `synchronousWatering` | Whether to enable synchronous zone watering | `false` |
 | `sunriseOffset` | Minutes before sunset to finish watering by | `0` |
 | `defaultDuration` | Default total watering time per zone (minutes) when adaptive watering is disabled | `5` |
 | `cycles` | Number of cycles per zone (watering time is spread between cycles)  | `2` |
@@ -94,17 +93,17 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 
 When scheduling is enabled, the plugin will schedule watering so that it finishes however many minutes before sunrise specified `sunriseOffset`.
 
-When `synchronousWatering` is enabled, scheduled zone watering cycles are allowed to overlap. This is NOT enabled by default as most systems are incapable of supplying sufficient pressure to water multiple zones simultaneously.
+The plugin schedules asynchronous zone watering times (no more than one zone should be on at a given time) as most systems are incapable of supplying sufficient pressure to water multiple zones simultaneously.
 
 Start times will vary daily as a result of changing sunrise times.
 
 ## Adaptive watering
 
-When adaptive watering is enabled, the zone watering duration will be calculates simply as a percentage (`100` by default, unless specified in `zonePercentages`) of the difference between your specified minimum watering temperature and the next day's forecasted maximum temperature.
+When adaptive watering is enabled, the zone watering duration will be calculates simply as a percentage (specified in `zonePercentages`) of the difference between your specified minimum watering temperature and the next day's forecasted maximum temperature.
 
 E.g. If `minTemperature` is `10`, and the maximum forecasted temperature is `25`, the total watering time per zone will be: `25` - `10` = `15` minutes
 
-If adaptive watering is disabled, but scheduling remains enabled, each zone will be watered for a percentage (`100` by default, unless specified in `zonePercentages`) of the number of minutes specified in `defaultDuration`
+If adaptive watering is disabled, but scheduling remains enabled, each zone will be watered for a percentage (specified in `zonePercentages`) of the number of minutes specified in `defaultDuration`
 
 ## API Interfacing
 
