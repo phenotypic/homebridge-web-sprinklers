@@ -132,7 +132,7 @@ Your API should be able to:
 ```
 /zone/setState/INT_VALUE
 ```
-
+For an example Zone3 in the ON position would send `/3/setState/1`
 ### Optional (if listener is enabled)
 
 1. Update `state` following a manual zone override by messaging the listen server:
