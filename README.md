@@ -69,7 +69,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `restrictedDays` | Days of the week when watering should **not** take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
 | `restrictedMonths` | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
 | `rainThreshold` | Percentage chance of rain above which watering will be cancelled | `40` |
-| `minTemperature` | Temperature (°C) below which watering will not take place | `10` |
+| `minTemperature` | Temperature (°C) below which watering will not take place | `15` |
 | `disableAdaptiveWatering` | Whether to disable adaptive watering and use `defaultDuration` instead | `false` |
 | `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `30` |
 | `zonePercentages` | Percentage of calculated zone watering time that a specific zone will receive | `100` |
@@ -101,7 +101,7 @@ Start times will vary daily as a result of changing sunrise times.
 
 When adaptive watering is enabled, the zone watering duration will be calculates simply as a percentage (specified in `zonePercentages`) of the difference between your specified minimum watering temperature and the next day's forecasted maximum temperature.
 
-E.g. If `minTemperature` is `10`, and the maximum forecasted temperature is `25`, the total watering time per zone will be: `25` - `10` = `15` minutes
+E.g. If `minTemperature` is `15`, and the maximum forecasted temperature is `25`, the total watering time per zone will be: `25` - `15` = `10` minutes
 
 If adaptive watering is disabled, but scheduling remains enabled, each zone will be watered for a percentage (specified in `zonePercentages`) of the number of minutes specified in `defaultDuration`
 
