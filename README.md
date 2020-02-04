@@ -130,7 +130,7 @@ Your API should be able to:
 
 2. Set zone state when it receives:
 ```
-/zone/setState/INT_VALUE
+/ZONE_INT_VALUE/setState/INT_VALUE
 ```
 
 ### Optional (if listener is enabled)
