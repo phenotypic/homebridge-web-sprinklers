@@ -64,14 +64,14 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | --- | --- | --- |
 | `disableScheduling` | Whether to disable water scheduling | `false` |
 | `sunriseOffset` | Minutes before sunset to finish watering by | `0` |
-| `defaultDuration` | Default total watering time per zone (minutes) when adaptive watering is disabled | `5` |
+| `defaultDuration` | Default total watering time per zone (minutes) when adaptive watering is disabled | `15` |
 | `cycles` | Number of cycles per zone (watering time is spread between cycles)  | `2` |
 | `restrictedDays` | Days of the week when watering should **not** take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
 | `restrictedMonths` | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
 | `rainThreshold` | Percentage chance of rain above which watering will be cancelled | `40` |
 | `minTemperature` | Temperature (°C) below which watering will not take place | `15` |
 | `disableAdaptiveWatering` | Whether to disable adaptive watering and use `defaultDuration` instead | `false` |
-| `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `30` |
+| `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `20` |
 | `zonePercentages` | Percentage of calculated zone watering time that a specific zone will receive | `100` |
 
 ### Additional options
