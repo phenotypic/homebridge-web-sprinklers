@@ -36,10 +36,9 @@ function WebSprinklers (log, config) {
   this.sunriseOffset = config.sunriseOffset || 0
   this.minTemperature = config.minTemperature || 15
 
-  this.defaultDuration = config.defaultDuration || 5
+  this.defaultDuration = config.defaultDuration || 15
   this.cycles = config.cycles || 2
-  this.cycleDuration = this.defaultDuration
-  this.maxDuration = config.maxDuration || 30
+  this.maxDuration = config.maxDuration || 20
   this.zonePercentages = config.zonePercentages || new Array(this.zones).fill(100)
 
   this.valveAccessory = []
