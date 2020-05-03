@@ -4,7 +4,7 @@
 
 ## Description
 
-This [homebridge](https://github.com/nfarina/homebridge) plugin exposes a web-based sprinkler system to Apple's [HomeKit](http://www.apple.com/ios/home/). Using HTTP requests, the plugin allows you to turn on/off individual sprinkler zones. With the use of the [Dark Sky API](https://darksky.net/dev), the plugin can also provide water scheduling.
+This [homebridge](https://github.com/nfarina/homebridge) plugin exposes a web-based sprinkler system to Apple's [HomeKit](http://www.apple.com/ios/home/). Using HTTP requests, the plugin allows you to turn on/off individual sprinkler zones. With the use of the [OpenWeatherMap API](https://openweathermap.org/api), the plugin can also provide water scheduling.
 
 Find script samples for the sprinkler controller in the _examples_ folder.
 
@@ -12,7 +12,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 
 1. Install [homebridge](https://github.com/nfarina/homebridge#installation-details)
 2. Install this plugin: `npm install -g homebridge-web-sprinklers`
-3. Sign up (for free) to the [Dark Sky API](https://darksky.net/dev) and retrieve your API key (if you want scheduling)
+3. Sign up (for free) to the [OpenWeatherMap API](https://openweathermap.org/api) and retrieve your API key (if you want scheduling)
 4. Update your `config.json` file
 
 ## Configuration
@@ -25,8 +25,8 @@ Find script samples for the sprinkler controller in the _examples_ folder.
        "accessory": "WebSprinklers",
        "name": "Sprinklers",
        "apiroute": "http://myurl.com",
-       "latitude": 51.501562114913995,
-       "longitude": -0.1473213074918931,
+       "latitude": xxxxxxxxxxx,
+       "longitude": xxxxxxxxxxx,
        "key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
        "zones": 6,
        "restrictedDays": [2, 4, 6],
@@ -64,14 +64,14 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | --- | --- | --- |
 | `disableScheduling` | Whether to disable water scheduling | `false` |
 | `sunriseOffset` | Minutes before sunset to finish watering by | `0` |
-| `defaultDuration` | Default total watering time per zone (minutes) when adaptive watering is disabled | `15` |
-| `cycles` | Number of cycles per zone (watering time is spread between cycles)  | `2` |
+| `defaultDuration` | Default total watering time per zone (minutes) | `20` |
+| `cycles` | Number of cycles per zone (watering is spread between cycles)  | `2` |
 | `restrictedDays` | Days of the week when watering should **not** take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
 | `restrictedMonths` | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
-| `rainThreshold` | Percentage chance of rain above which watering will be cancelled | `40` |
-| `minTemperature` | Temperature (°C) below which watering will not take place | `15` |
+| `lowThreshold` | Forecasted low temperature (°C) below which watering will not take place | `10` |
+| `highThreshold` | Forecasted high temperature (°C) below which watering will not take place | `20` |
 | `disableAdaptiveWatering` | Whether to disable adaptive watering and use `defaultDuration` instead | `false` |
-| `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `20` |
+| `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `30` |
 | `zonePercentages` | Percentage of calculated zone watering time that a specific zone will receive | `100` |
 
 ### Additional options
@@ -91,17 +91,29 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 
 ## Scheduling
 
-When scheduling is enabled, the plugin will schedule watering so that it finishes however many minutes before sunrise specified `sunriseOffset`.
+When scheduling is enabled, the plugin will schedule watering so that it finishes however many minutes before sunrise specified in `sunriseOffset`.
 
-The plugin schedules asynchronous zone watering times (no more than one zone should be on at a given time) as most systems are incapable of supplying sufficient pressure to water multiple zones simultaneously.
+The plugin schedules asynchronous zone watering times (no more than one zone on at a given time), as most systems are incapable of supplying sufficient pressure to water multiple zones simultaneously.
 
 Start times will vary daily as a result of changing sunrise times.
 
 ## Adaptive watering
 
-When adaptive watering is enabled, the zone watering duration will be calculates simply as a percentage (specified in `zonePercentages`) of the difference between your specified minimum watering temperature and the next day's forecasted maximum temperature.
+When adaptive watering is enabled, a zone's total watering duration will be calculated as a percentage (specified in `zonePercentages`) of the calculation below:
 
-E.g. If `minTemperature` is `15`, and the maximum forecasted temperature is `25`, the total watering time per zone will be: `25` - `15` = `10` minutes
+```js
+highDiff = (tomorrowMax - highThreshold) / 2
+lowDiff = highThreshold - tomorrowMin
+zoneMaxDuration = defaultDuration + (highDiff - lowDiff)
+```
+
+E.g. Tomorrow's forecast is `28` high and `17` low. `highThreshold` is `20` and `defaultDuration` is `20`. The max watering duration for each zone is `21` minutes:
+
+```js
+highDiff = (28 - 20) / 2 //4
+lowDiff = 20 - 17 //3
+zoneMaxDuration = 20 + (4 - 3) //21
+```
 
 If adaptive watering is disabled, but scheduling remains enabled, each zone will be watered for a percentage (specified in `zonePercentages`) of the number of minutes specified in `defaultDuration`
 
