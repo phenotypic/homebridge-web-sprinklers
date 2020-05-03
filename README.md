@@ -56,7 +56,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `apiroute` | Root URL of your device | N/A |
 | `latitude` | Your decimal latitude | N/A |
 | `longitude` | Your decimal longitude | N/A |
-| `key` | Your [Dark Sky API](https://darksky.net/dev) key  | N/A |
+| `key` | Your [OpenWeatherMap API](https://openweathermap.org/api) key  | N/A |
 | `zones` | Number of sprinkler zones  | `6` |
 
 ## Optional fields
