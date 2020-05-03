@@ -21,7 +21,7 @@
 const char* ssid = "SSID"; // Name of your network
 const char* password = "PASSWORD"; // Password for your network
 const int zones = 6; // Number of zones (max is 9)
-const int timeout = 11; // Automatic shutoff time (in minutes)
+const int timeout = 15; // Automatic shutoff time (in minutes)
 const String relay = "LOW"; // Relay type (`HIGH` or `LOW`)
 const char* mdns = "sprinklers"; // mDNS name
 //////////////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ void loop() {
   MDNS.update();
 
   for (i = 1; i <= zones; i++) {
-    if (millis() - timeArray[i] > timeout * 60000 && stateArray[i]) {
+    if (millis() - timeArray[i] > (timeout * 60000) && stateArray[i]) {
       Serial.println("Zone " + String(i) + " reached timeout. Disabling... ");
       digitalWrite(zonePins[i], relayOff);
       stateArray[i] = 0;
