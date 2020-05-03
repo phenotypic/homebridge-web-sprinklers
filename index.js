@@ -32,13 +32,16 @@ function WebSprinklers (log, config) {
 
   this.restrictedDays = config.restrictedDays || []
   this.restrictedMonths = config.restrictedMonths || []
-  this.rainThreshold = config.rainThreshold || 40
   this.sunriseOffset = config.sunriseOffset || 0
-  this.minTemperature = config.minTemperature || 15
 
-  this.defaultDuration = config.defaultDuration || 15
+  this.lowThreshold = config.lowThreshold || 10
+  this.highThreshold = config.highThreshold || 20
+
+  this.defaultDuration = config.defaultDuration || 20
+  this.maxDuration = config.maxDuration || 30
+
   this.cycles = config.cycles || 2
-  this.maxDuration = config.maxDuration || 20
+
   this.zonePercentages = config.zonePercentages || new Array(this.zones).fill(100)
 
   this.valveAccessory = []
@@ -144,7 +147,7 @@ WebSprinklers.prototype = {
   },
 
   _calculateSchedule: function (callback) {
-    var url = 'https://api.darksky.net/forecast/' + this.key + '/' + this.latitude + ',' + this.longitude + '?exclude=currently,minutely,hourly,alerts,flags&units=si'
+    var url = 'https://api.openweathermap.org/data/2.5/onecall?lat=' + this.latitude + '&lon=' + this.longitude + '&exclude=current,hourly&units=metric&appid=' + this.key
     this.log.debug('Retrieving weather data: %s', url)
     this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
       if (error) {
@@ -163,72 +166,74 @@ WebSprinklers.prototype = {
           }, 60000)
           return this.log.error('Error parsing weather data: %s', error)
         }
-        var today = json.daily.data[0]
-        var tomorrow = json.daily.data[1]
+        var today = json.daily[0]
+        var tomorrow = json.daily[1]
 
-        var todaySunrise = new Date(today.sunriseTime * 1000)
-        var tomorrowSunrise = new Date(tomorrow.sunriseTime * 1000)
+        var sunrise = new Date(tomorrow.sunrise * 1000)
 
-        var todaySummary = today.summary
-        var todayRain = Math.round(today.precipProbability * 100)
-        var tomorrowSummary = tomorrow.summary
-        var tomorrowRain = Math.round(tomorrow.precipProbability * 100)
-        var tomorrowMin = tomorrow.temperatureMin
-        var tomorrowMax = tomorrow.temperatureMax
+        var todaySummary = today.weather[0].description
+        var todayRain = 'rain' in today
 
-        this.log('------------------------------------------------------')
+        var tomorrowSummary = tomorrow.weather[0].description
+        var tomorrowRain = 'rain' in tomorrow
+        var tomorrowMin = tomorrow.temp.min
+        var tomorrowMax = tomorrow.temp.max
+
+        this.log('----------------------------------------------')
         this.log('Today summary: %s', todaySummary)
-        this.log('Today sunrise: %s', todaySunrise.toLocaleString())
-        this.log('Today rain probability: %s%', todayRain)
-        this.log('------------------------------------------------------')
+        this.log('Today rain: %s', todayRain)
+        this.log('----------------------------------------------')
         this.log('Tomorrow summary: %s', tomorrowSummary)
-        this.log('Tomorrow sunrise: %s', tomorrowSunrise.toLocaleString())
+        this.log('Tomorrow sunrise: %s', sunrise.toLocaleString())
         this.log('Tomorrow min temp: %s°', tomorrowMin)
         this.log('Tomorrow max temp: %s°', tomorrowMax)
-        this.log('Tomorrow rain probability: %s%', tomorrowRain)
-        this.log('------------------------------------------------------')
+        this.log('Tomorrow rain: %s', tomorrowRain)
+        this.log('----------------------------------------------')
 
-        var zoneMaxDuration = this.defaultDuration
-
-        if (!this.disableAdaptiveWatering && tomorrowMin > this.minTemperature) {
-          zoneMaxDuration = tomorrowMax - this.minTemperature
-          if (zoneMaxDuration > this.maxDuration) {
-            zoneMaxDuration = this.maxDuration
+        if (!this.restrictedDays.includes(sunrise.getDay()) && !this.restrictedMonths.includes(sunrise.getMonth()) && !todayRain && !tomorrowRain && tomorrowMin > this.lowThreshold && tomorrowMax > this.highThreshold) {
+          if (!this.disableAdaptiveWatering) {
+            var highDiff = (tomorrowMax - this.highThreshold) / 2
+            var lowDiff = this.highThreshold - tomorrowMin
+            zoneMaxDuration =  this.defaultDuration + (highDiff - lowDiff)
+            if (zoneMaxDuration > this.maxDuration) {
+              zoneMaxDuration = this.maxDuration
+            }
+          } else {
+            zoneMaxDuration = this.defaultDuration
           }
-        }
 
-        for (var zone = 1; zone <= this.zones; zone++) {
-          this.zoneDuration[zone] = ((zoneMaxDuration / this.cycles) / 100) * this.zonePercentages[zone - 1]
-        }
-
-        var totalTime = this.zoneDuration.reduce((a, b) => a + b, 0) * this.cycles
-
-        var startTime = new Date(todaySunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
-        if (startTime.getTime() < Date.now()) {
-          startTime = new Date(tomorrowSunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
-        }
-        var finishTime = new Date(startTime.getTime() + totalTime * 60000)
-
-        if (!this.restrictedDays.includes(startTime.getDay()) && !this.restrictedMonths.includes(startTime.getMonth()) && todayRain < this.rainThreshold && tomorrowRain < this.rainThreshold && tomorrowMin > this.minTemperature) {
-          for (zone = 1; zone <= this.zones; zone++) {
-            this.log('Zone %s | %sx %s minute cycles', zone, this.cycles, Math.round(this.zoneDuration[zone]))
+          for (var zone = 1; zone <= this.zones; zone++) {
+            this.zoneDuration[zone] = ((zoneMaxDuration / this.cycles) / 100) * this.zonePercentages[zone - 1]
           }
+
+          var totalTime = this.zoneDuration.reduce((a, b) => a + b, 0) * this.cycles
+
+          var startTime = new Date(sunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
+          var finishTime = new Date(startTime.getTime() + totalTime * 60000)
+
           this.log('Total watering time: %s minutes', Math.round(totalTime))
           this.log('Watering starts: %s', startTime.toLocaleString())
           this.log('Watering finishes: %s', finishTime.toLocaleString())
+          this.log('Base watering time: %s minutes', Math.round(zoneMaxDuration))
+          this.log('----------------------------------------------')
+
+          for (zone = 1; zone <= this.zones; zone++) {
+            this.log('Zone %s | %sx %s minute cycles', zone, this.cycles, Math.round(this.zoneDuration[zone]))
+          }
+
           schedule.scheduleJob(startTime, function () {
             this.log('Starting water cycle 1/%s', this.cycles)
             this._wateringCycle(1, 1)
           }.bind(this))
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
         } else {
-          this.log('No schedule set, recalculation: %s', startTime.toLocaleString())
+          this.log('No schedule set, recalculation: %s', sunrise.toLocaleString())
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(0)
-          schedule.scheduleJob(startTime, function () {
+          schedule.scheduleJob(sunrise, function () {
             this._calculateSchedule(function () {})
           }.bind(this))
         }
-        this.log('------------------------------------------------------')
+        this.log('----------------------------------------------')
         callback()
       }
     }.bind(this))
