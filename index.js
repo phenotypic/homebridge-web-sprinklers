@@ -185,8 +185,8 @@ WebSprinklers.prototype = {
         this.log('----------------------------------------------')
         this.log('Tomorrow summary: %s', tomorrowSummary)
         this.log('Tomorrow sunrise: %s', sunrise.toLocaleString())
-        this.log('Tomorrow min temp: %s°', tomorrowMin)
-        this.log('Tomorrow max temp: %s°', tomorrowMax)
+        this.log('Tomorrow min temp: %s°C', tomorrowMin)
+        this.log('Tomorrow max temp: %s°C', tomorrowMax)
         this.log('Tomorrow rain: %s', tomorrowRain)
         this.log('----------------------------------------------')
 
