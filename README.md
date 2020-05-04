@@ -93,7 +93,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 
 ## Scheduling
 
-When scheduling is enabled, the plugin will schedule watering so that it finishes however many minutes before sunrise the next day specified in `sunriseOffset`, as it meets the following criteria:
+When scheduling is enabled, the plugin will schedule watering so that it finishes however many minutes before sunrise the next day specified in `sunriseOffset`, if it meets the following criteria:
 
 - Not on a restricted day/month
 - No rain today or tomorrow
