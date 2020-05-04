@@ -1,6 +1,6 @@
 {
   "name": "homebridge-web-sprinklers",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "Homebridge plugin for a web-based sprinkler system",
   "main": "index.js",
   "dependencies": {
