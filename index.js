@@ -33,8 +33,7 @@ function WebSprinklers (log, config) {
   this.restrictedDays = config.restrictedDays || []
   this.restrictedMonths = config.restrictedMonths || []
   this.sunriseOffset = config.sunriseOffset || 0
-  this.cloudCancel = config.cloudCancel || 35
-  this.windCancel = config.windCancel || 7
+  this.cloudCancel = config.cloudCancel || 55
 
   this.lowThreshold = config.lowThreshold || 10
   this.highThreshold = config.highThreshold || 20
@@ -177,7 +176,6 @@ WebSprinklers.prototype = {
         var todayMax = today.temp.max
         var todayRain = 'rain' in today
         var todayCloud = today.clouds
-        var todayWind = today.wind_speed
 
         var tomorrowSummary = tomorrow.weather[0].description
         var tomorrowSunrise = new Date(tomorrow.sunrise * 1000)
@@ -185,7 +183,6 @@ WebSprinklers.prototype = {
         var tomorrowMax = tomorrow.temp.max
         var tomorrowRain = 'rain' in tomorrow
         var tomorrowCloud = tomorrow.clouds
-        var tomorrowWind = tomorrow.wind_speed
 
         this.log('----------------------------------------------')
         this.log('Today summary: %s', todaySummary)
@@ -194,7 +191,6 @@ WebSprinklers.prototype = {
         this.log('Today max temp: %s °C', todayMax)
         this.log('Today rain: %s', todayRain)
         this.log('Today cloud cover: %s %', todayCloud)
-        this.log('Today wind speed: %s m/s', todayWind)
         this.log('----------------------------------------------')
         this.log('Tomorrow summary: %s', tomorrowSummary)
         this.log('Tomorrow sunrise: %s', tomorrowSunrise.toLocaleString())
@@ -202,10 +198,9 @@ WebSprinklers.prototype = {
         this.log('Tomorrow max temp: %s °C', tomorrowMax)
         this.log('Tomorrow rain: %s', tomorrowRain)
         this.log('Tomorrow cloud cover: %s %', tomorrowCloud)
-        this.log('Tomorrow wind speed: %s m/s', tomorrowWind)
         this.log('----------------------------------------------')
 
-        if (!this.restrictedDays.includes(tomorrowSunrise.getDay()) && !this.restrictedMonths.includes(tomorrowSunrise.getMonth()) && !todayRain && !tomorrowRain && tomorrowMin > this.lowThreshold && tomorrowMax > this.highThreshold && tomorrowCloud < this.cloudCancel && tomorrowWind < this.windCancel) {
+        if (!this.restrictedDays.includes(tomorrowSunrise.getDay()) && !this.restrictedMonths.includes(tomorrowSunrise.getMonth()) && !todayRain && !tomorrowRain && tomorrowMin > this.lowThreshold && tomorrowMax > this.highThreshold && tomorrowCloud < this.cloudCancel) {
           if (!this.disableAdaptiveWatering) {
             var highDiff = (tomorrowMax - this.highThreshold) / 2
             var lowDiff = this.highThreshold - tomorrowMin

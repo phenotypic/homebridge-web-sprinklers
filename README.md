@@ -70,8 +70,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `restrictedMonths` | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
 | `lowThreshold` | Forecasted low temperature (°C) below which watering will not take place | `10` |
 | `highThreshold` | Forecasted high temperature (°C) below which watering will not take place | `20` |
-| `cloudCancel` | Cloud cover (%) above which watering will not take place | `35` |
-| `windCancel` | Wind speed (m/s) above which watering will not take place | `7` |
+| `cloudCancel` | Cloud cover (%) above which watering will not take place | `55` |
 | `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `30` |
 | `zonePercentages` | Percentage of calculated zone watering time that a specific zone will receive | `100` |
 | `disableAdaptiveWatering` | Whether to disable adaptive watering and use `defaultDuration` instead | `false` |
@@ -98,7 +97,7 @@ When scheduling is enabled, the plugin will schedule watering so that it finishe
 - Not on a restricted day/month
 - No rain today or tomorrow
 - Forecasted low and high temperature higher than their respective thresholds
-- Forecasted cloud cover and wind speed not higher than their respective thresholds
+- Forecasted cloud cover not higher than cloud cover threshold
 
 If adaptive watering is disabled, but scheduling remains enabled, each zone will be watered for a percentage (specified in `zonePercentages`) of the number of minutes specified in `defaultDuration`
 
