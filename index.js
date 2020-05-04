@@ -33,7 +33,7 @@ function WebSprinklers (log, config) {
   this.restrictedDays = config.restrictedDays || []
   this.restrictedMonths = config.restrictedMonths || []
   this.sunriseOffset = config.sunriseOffset || 0
-  this.cloudCancel = config.cloudCancel || 50
+  this.cloudCancel = config.cloudCancel || 40
   this.windCancel = config.windCancel || 10
 
   this.lowThreshold = config.lowThreshold || 10
