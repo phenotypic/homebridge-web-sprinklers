@@ -213,8 +213,6 @@ WebSprinklers.prototype = {
             var zoneMaxDuration = ((this.defaultDuration + (highDiff - lowDiff)) / 100) * cloudPercentage
             if (zoneMaxDuration > this.maxDuration) {
               zoneMaxDuration = this.maxDuration
-            } else if (zoneMaxDuration < 1) {
-              zoneMaxDuration = 1
             }
           } else {
             zoneMaxDuration = this.defaultDuration
