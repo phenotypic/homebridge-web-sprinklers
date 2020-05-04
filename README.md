@@ -70,9 +70,11 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `restrictedMonths` | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
 | `lowThreshold` | Forecasted low temperature (°C) below which watering will not take place | `10` |
 | `highThreshold` | Forecasted high temperature (°C) below which watering will not take place | `20` |
-| `disableAdaptiveWatering` | Whether to disable adaptive watering and use `defaultDuration` instead | `false` |
+| `cloudCancel` | Cloud cover (%) above which watering will not take place | `50` |
+| `windCancel` | Wind speed (m/s) above which watering will not take place | `10` |
 | `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `30` |
 | `zonePercentages` | Percentage of calculated zone watering time that a specific zone will receive | `100` |
+| `disableAdaptiveWatering` | Whether to disable adaptive watering and use `defaultDuration` instead | `false` |
 
 ### Additional options
 | Key | Description | Default |
@@ -91,7 +93,14 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 
 ## Scheduling
 
-When scheduling is enabled, the plugin will schedule watering so that it finishes however many minutes before sunrise specified in `sunriseOffset`.
+When scheduling is enabled, the plugin will schedule watering so that it finishes however many minutes before sunrise the next day specified in `sunriseOffset`, as it meets the following criteria:
+
+- Not on a restricted day/month
+- No rain today or tomorrow
+- Forecasted low and high temperature higher than their respective thresholds
+- Forecasted cloud cover and wind speed not higher than their respective thresholds
+
+If adaptive watering is disabled, but scheduling remains enabled, each zone will be watered for a percentage (specified in `zonePercentages`) of the number of minutes specified in `defaultDuration`
 
 The plugin schedules asynchronous zone watering times (no more than one zone on at a given time), as most systems are incapable of supplying sufficient pressure to water multiple zones simultaneously.
 
@@ -104,18 +113,18 @@ When adaptive watering is enabled, a zone's total watering duration will be calc
 ```js
 highDiff = (tomorrowMax - highThreshold) / 2
 lowDiff = highThreshold - tomorrowMin
-zoneMaxDuration = defaultDuration + (highDiff - lowDiff)
+cloudPercentage = (100 - tomorrowCloud)
+zoneMaxDuration = ((defaultDuration + (highDiff - lowDiff)) / 100) * cloudPercentage
 ```
 
-E.g. Tomorrow's forecast is `28` high and `17` low. `highThreshold` is `20` and `defaultDuration` is `20`. The max watering duration for each zone is `21` minutes:
+E.g. Tomorrow's forecast is `28` high and `17` low. Cloud cover is `10`. `highThreshold` is `20` and `defaultDuration` is `20`. The max watering duration for each zone would be `18.9` minutes:
 
 ```js
 highDiff = (28 - 20) / 2 //4
 lowDiff = 20 - 17 //3
-zoneMaxDuration = 20 + (4 - 3) //21
+cloudPercentage = (100 - 10) //90
+zoneMaxDuration = ((20 + (4 - 3)) / 100) * 90 //18.9
 ```
-
-If adaptive watering is disabled, but scheduling remains enabled, each zone will be watered for a percentage (specified in `zonePercentages`) of the number of minutes specified in `defaultDuration`
 
 ## API Interfacing
 
