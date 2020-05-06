@@ -201,9 +201,9 @@ WebSprinklers.prototype = {
 
         if (!this.restrictedDays.includes(tomorrowSunrise.getDay()) && !this.restrictedMonths.includes(tomorrowSunrise.getMonth()) && !todayRain && !tomorrowRain && tomorrowMin > this.lowThreshold && tomorrowMax > this.highThreshold) {
           if (!this.disableAdaptiveWatering) {
-            var highDiff = (tomorrowMax - this.highThreshold) / 2
+            var highDiff = tomorrowMax - this.highThreshold
             var lowDiff = this.highThreshold - tomorrowMin
-            var cloudPercentage = 100 - (tomorrowCloud / 4)
+            var cloudPercentage = 100 - (tomorrowCloud / 3)
             var zoneMaxDuration = ((this.defaultDuration + (highDiff - lowDiff)) / 100) * cloudPercentage
             if (zoneMaxDuration > this.maxDuration) {
               zoneMaxDuration = this.maxDuration
