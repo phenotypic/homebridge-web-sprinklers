@@ -33,7 +33,6 @@ function WebSprinklers (log, config) {
   this.restrictedDays = config.restrictedDays || []
   this.restrictedMonths = config.restrictedMonths || []
   this.sunriseOffset = config.sunriseOffset || 0
-  this.cloudCancel = config.cloudCancel || 60
 
   this.lowThreshold = config.lowThreshold || 10
   this.highThreshold = config.highThreshold || 20
@@ -200,11 +199,12 @@ WebSprinklers.prototype = {
         this.log('Tomorrow cloud cover: %s %', tomorrowCloud)
         this.log('----------------------------------------------')
 
-        if (!this.restrictedDays.includes(tomorrowSunrise.getDay()) && !this.restrictedMonths.includes(tomorrowSunrise.getMonth()) && !todayRain && !tomorrowRain && tomorrowMin > this.lowThreshold && tomorrowMax > this.highThreshold && tomorrowCloud < this.cloudCancel) {
+        if (!this.restrictedDays.includes(tomorrowSunrise.getDay()) && !this.restrictedMonths.includes(tomorrowSunrise.getMonth()) && !todayRain && !tomorrowRain && tomorrowMin > this.lowThreshold && tomorrowMax > this.highThreshold) {
           if (!this.disableAdaptiveWatering) {
             var highDiff = (tomorrowMax - this.highThreshold) / 2
             var lowDiff = this.highThreshold - tomorrowMin
-            var zoneMaxDuration = ((this.defaultDuration + (highDiff - lowDiff)) / 100) * (100 - tomorrowCloud)
+            var cloudPercentage = 100 - (tomorrowCloud / 4)
+            var zoneMaxDuration = ((this.defaultDuration + (highDiff - lowDiff)) / 100) * cloudPercentage
             if (zoneMaxDuration > this.maxDuration) {
               zoneMaxDuration = this.maxDuration
             }
