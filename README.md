@@ -70,7 +70,6 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `restrictedMonths` | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
 | `lowThreshold` | Forecasted low temperature (°C) below which watering will not take place | `10` |
 | `highThreshold` | Forecasted high temperature (°C) below which watering will not take place | `20` |
-| `cloudCancel` | Cloud cover (%) above which watering will not take place | `60` |
 | `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `30` |
 | `zonePercentages` | Percentage of calculated zone watering time that a specific zone will receive | `100` |
 | `disableAdaptiveWatering` | Whether to disable adaptive watering and use `defaultDuration` instead | `false` |
@@ -97,7 +96,6 @@ When scheduling is enabled, the plugin will schedule watering so that it finishe
 - Not on a restricted day/month
 - No rain today or tomorrow
 - Forecasted low and high temperature higher than their respective thresholds
-- Forecasted cloud cover not higher than cloud cover threshold
 
 If adaptive watering is disabled, but scheduling remains enabled, each zone will be watered for a percentage (specified in `zonePercentages`) of the number of minutes specified in `defaultDuration`
 
@@ -110,17 +108,19 @@ Start times will vary daily as a result of changing sunrise times.
 When adaptive watering is enabled, a zone's total watering duration will be calculated as a percentage (specified in `zonePercentages`) of the calculation below:
 
 ```js
-highDiff = (tomorrowMax - highThreshold) / 2
+highDiff = tomorrowMax - highThreshold
 lowDiff = highThreshold - tomorrowMin
-zoneMaxDuration = ((defaultDuration + (highDiff - lowDiff)) / 100) * (100 - tomorrowCloud)
+cloudPercentage = 100 - (tomorrowCloud / 3)
+zoneMaxDuration = ((defaultDuration + (highDiff - lowDiff)) / 100) * cloudPercentage
 ```
 
-E.g. Tomorrow's forecast is `28` high and `17` low. Cloud cover is `10`. `highThreshold` is `20` and `defaultDuration` is `20`. The max watering duration for each zone would be `18.9` minutes:
+E.g. Tomorrow's forecast is `28` high and `17` low. Cloud cover is `60`. `highThreshold` is `20` and `defaultDuration` is `20`. The max watering duration for each zone would be `20` minutes:
 
 ```js
-highDiff = (28 - 20) / 2 //4
+highDiff = 28 - 20 //8
 lowDiff = 20 - 17 //3
-zoneMaxDuration = ((20 + (4 - 3)) / 100) * (100 - 10) //18.9
+cloudPercentage = 100 - (60 / 3) //80
+zoneMaxDuration = ((20 + (8 - 3)) / 100) * 80 //20
 ```
 
 ## API Interfacing
