@@ -203,7 +203,7 @@ WebSprinklers.prototype = {
           if (!this.disableAdaptiveWatering) {
             var highDiff = tomorrowMax - this.highThreshold
             var lowDiff = this.highThreshold - tomorrowMin
-            var cloudPercentage = 100 - (tomorrowCloud / 3)
+            var cloudPercentage = 100 - (tomorrowCloud / 2)
             var zoneMaxDuration = ((this.defaultDuration + (highDiff - lowDiff)) / 100) * cloudPercentage
             if (zoneMaxDuration > this.maxDuration) {
               zoneMaxDuration = this.maxDuration
