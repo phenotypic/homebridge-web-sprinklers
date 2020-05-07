@@ -52,17 +52,8 @@ function WebSprinklers (log, config) {
   this.model = config.model || packageJson.name
   this.firmware = config.firmware || packageJson.version
 
-  this.username = config.username || null
-  this.password = config.password || null
   this.timeout = config.timeout || 3000
   this.http_method = config.http_method || 'GET'
-
-  if (this.username != null && this.password != null) {
-    this.auth = {
-      user: this.username,
-      pass: this.password
-    }
-  }
 
   if (this.listener) {
     this.server = http.createServer(function (request, response) {
@@ -101,8 +92,7 @@ WebSprinklers.prototype = {
       body: body,
       method: this.http_method,
       timeout: this.timeout,
-      rejectUnauthorized: false,
-      auth: this.auth
+      rejectUnauthorized: false
     },
     function (error, response, body) {
       callback(error, response, body)
@@ -166,50 +156,64 @@ WebSprinklers.prototype = {
           }, 60000)
           return this.log.error('Error parsing weather data: %s', error)
         }
-        var today = json.daily[0]
-        var tomorrow = json.daily[1]
 
-        var todaySummary = today.weather[0].description
-        var todaySunrise = new Date(today.sunrise * 1000)
-        var todayMin = today.temp.min
-        var todayMax = today.temp.max
-        var todayRain = 'rain' in today
-        var todayCloud = today.clouds
+        var today = {}
+        today.summary = json.daily[0].weather[0].description
+        today.sunrise = new Date(json.daily[0].sunrise * 1000)
+        today.min = json.daily[0].temp.min
+        today.max = json.daily[0].temp.max
+        today.rain = 'rain' in json.daily[0]
+        today.clouds = json.daily[0].clouds
 
-        var tomorrowSummary = tomorrow.weather[0].description
-        var tomorrowSunrise = new Date(tomorrow.sunrise * 1000)
-        var tomorrowMin = tomorrow.temp.min
-        var tomorrowMax = tomorrow.temp.max
-        var tomorrowRain = 'rain' in tomorrow
-        var tomorrowCloud = tomorrow.clouds
+        var tomorrow = {}
+        tomorrow.summary = json.daily[1].weather[0].description
+        tomorrow.sunrise = new Date(json.daily[1].sunrise * 1000)
+        tomorrow.min = json.daily[1].temp.min
+        tomorrow.max = json.daily[1].temp.max
+        tomorrow.rain = 'rain' in json.daily[1]
+        tomorrow.clouds = json.daily[1].clouds
 
         this.log('----------------------------------------------')
-        this.log('Today summary: %s', todaySummary)
-        this.log('Today sunrise: %s', todaySunrise.toLocaleString())
-        this.log('Today min temp: %s °C', todayMin)
-        this.log('Today max temp: %s °C', todayMax)
-        this.log('Today rain: %s', todayRain)
-        this.log('Today cloud cover: %s %', todayCloud)
+        this.log('Today summary: %s', today.summary)
+        this.log('Today sunrise: %s', today.sunrise.toLocaleString())
+        this.log('Today min temp: %s °C', today.min)
+        this.log('Today max temp: %s °C', today.max)
+        this.log('Today rain: %s', today.rain)
+        this.log('Today cloud cover: %s %', today.clouds)
         this.log('----------------------------------------------')
-        this.log('Tomorrow summary: %s', tomorrowSummary)
-        this.log('Tomorrow sunrise: %s', tomorrowSunrise.toLocaleString())
-        this.log('Tomorrow min temp: %s °C', tomorrowMin)
-        this.log('Tomorrow max temp: %s °C', tomorrowMax)
-        this.log('Tomorrow rain: %s', tomorrowRain)
-        this.log('Tomorrow cloud cover: %s %', tomorrowCloud)
+        this.log('Tomorrow summary: %s', tomorrow.summary)
+        this.log('Tomorrow sunrise: %s', tomorrow.sunrise.toLocaleString())
+        this.log('Tomorrow min temp: %s °C', tomorrow.min)
+        this.log('Tomorrow max temp: %s °C', tomorrow.max)
+        this.log('Tomorrow rain: %s', tomorrow.rain)
+        this.log('Tomorrow cloud cover: %s %', tomorrow.clouds)
         this.log('----------------------------------------------')
 
-        if (!this.restrictedDays.includes(tomorrowSunrise.getDay()) && !this.restrictedMonths.includes(tomorrowSunrise.getMonth()) && !todayRain && !tomorrowRain && tomorrowMin > this.lowThreshold && tomorrowMax > this.highThreshold) {
+        var maximumTotal
+        if (this.disableAdaptiveWatering) {
+          maximumTotal = this.zones * this.defaultDuration
+        } else {
+          maximumTotal = this.zones * this.maxDuration
+        }
+
+        var earliestToday = new Date(today.sunrise.getTime() - (maximumTotal + this.sunriseOffset) * 60000)
+        var waterDay
+        if (earliestToday.getTime() > Date.now()) {
+          waterDay = today
+        } else {
+          waterDay = tomorrow
+        }
+
+        if (!this.restrictedDays.includes(waterDay.sunrise.getDay()) && !this.restrictedMonths.includes(waterDay.sunrise.getMonth()) && !today.rain && !tomorrow.rain && waterDay.min > this.lowThreshold && waterDay.max > this.highThreshold) {
+          var zoneMaxDuration = this.defaultDuration
           if (!this.disableAdaptiveWatering) {
-            var highDiff = tomorrowMax - this.highThreshold
-            var lowDiff = this.highThreshold - tomorrowMin
-            var cloudPercentage = 100 - (tomorrowCloud / 2)
-            var zoneMaxDuration = ((this.defaultDuration + (highDiff - lowDiff)) / 100) * cloudPercentage
+            var highDiff = waterDay.max - this.highThreshold
+            var lowDiff = this.highThreshold - waterDay.min
+            var cloudPercentage = 100 - (waterDay.clouds / 2)
+            zoneMaxDuration = ((this.defaultDuration + (highDiff - lowDiff)) / 100) * cloudPercentage
             if (zoneMaxDuration > this.maxDuration) {
               zoneMaxDuration = this.maxDuration
             }
-          } else {
-            zoneMaxDuration = this.defaultDuration
           }
 
           for (var zone = 1; zone <= this.zones; zone++) {
@@ -218,13 +222,13 @@ WebSprinklers.prototype = {
 
           var totalTime = this.zoneDuration.reduce((a, b) => a + b, 0) * this.cycles
 
-          var startTime = new Date(tomorrowSunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
+          var startTime = new Date(waterDay.sunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
           var finishTime = new Date(startTime.getTime() + totalTime * 60000)
 
           this.log('Total watering time: %s minutes', Math.round(totalTime))
           this.log('Watering starts: %s', startTime.toLocaleString())
           this.log('Watering finishes: %s', finishTime.toLocaleString())
-          this.log('Base watering time: %s minutes', Math.round(zoneMaxDuration))
+          this.log('Zone max duration: %s minutes', Math.round(zoneMaxDuration))
           this.log('----------------------------------------------')
 
           for (zone = 1; zone <= this.zones; zone++) {
@@ -237,9 +241,9 @@ WebSprinklers.prototype = {
           }.bind(this))
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(1)
         } else {
-          this.log('No schedule set, recalculation: %s', tomorrowSunrise.toLocaleString())
+          this.log('No schedule set, recalculation: %s', waterDay.sunrise.toLocaleString())
           this.service.getCharacteristic(Characteristic.ProgramMode).updateValue(0)
-          schedule.scheduleJob(tomorrowSunrise, function () {
+          schedule.scheduleJob(waterDay.sunrise, function () {
             this._calculateSchedule(function () {})
           }.bind(this))
         }
