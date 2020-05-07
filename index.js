@@ -225,9 +225,9 @@ WebSprinklers.prototype = {
           var startTime = new Date(waterDay.sunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
           var finishTime = new Date(startTime.getTime() + totalTime * 60000)
 
-          this.log('Total watering time: %s minutes', Math.round(totalTime))
           this.log('Watering starts: %s', startTime.toLocaleString())
           this.log('Watering finishes: %s', finishTime.toLocaleString())
+          this.log('Total watering time: %s minutes', Math.round(totalTime))
           this.log('Zone max duration: %s minutes', Math.round(zoneMaxDuration))
           this.log('----------------------------------------------')
 
