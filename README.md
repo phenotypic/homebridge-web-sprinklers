@@ -110,17 +110,8 @@ When adaptive watering is enabled, a zone's total watering duration will be calc
 ```js
 highDiff = tomorrowMax - highThreshold
 lowDiff = highThreshold - tomorrowMin
-cloudPercentage = 100 - (tomorrowCloud / 3)
+cloudPercentage = 100 - (tomorrowCloud / 2)
 zoneMaxDuration = ((defaultDuration + (highDiff - lowDiff)) / 100) * cloudPercentage
-```
-
-E.g. Tomorrow's forecast is `28` high and `17` low. Cloud cover is `60`. `highThreshold` is `20` and `defaultDuration` is `20`. The max watering duration for each zone would be `20` minutes:
-
-```js
-highDiff = 28 - 20 //8
-lowDiff = 20 - 17 //3
-cloudPercentage = 100 - (60 / 3) //80
-zoneMaxDuration = ((20 + (8 - 3)) / 100) * 80 //20
 ```
 
 ## API Interfacing
