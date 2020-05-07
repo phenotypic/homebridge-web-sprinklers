@@ -82,8 +82,6 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `timeout` | Time (in milliseconds) until the accessory will be marked as _Not Responding_ if it is unreachable | `3000` |
 | `port` | Port for your HTTP listener (if enabled) | `2000` |
 | `http_method` | HTTP method used to communicate with the device | `GET` |
-| `username` | Username if HTTP authentication is enabled | N/A |
-| `password` | Password if HTTP authentication is enabled | N/A |
 | `model` | Appears under the _Model_ field for the accessory | plugin |
 | `serial` | Appears under the _Serial_ field for the accessory | apiroute |
 | `manufacturer` | Appears under the _Manufacturer_ field for the accessory | author |
@@ -91,10 +89,12 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 
 ## Scheduling
 
-When scheduling is enabled, the plugin will schedule watering so that it finishes however many minutes before sunrise the next day specified in `sunriseOffset`, if it meets the following criteria:
+When scheduling is enabled, the plugin will see if watering can be completed today by however many minutes before sunrise  specified in `sunriseOffset`, if not, it will schedule the relevant time for the next day.
 
-- Not on a restricted day/month
-- No rain today or tomorrow
+The day selected must match the following criteria for watering to place:
+
+- Not a restricted day/month
+- No rain forecasted for today or tomorrow
 - Forecasted low and high temperature higher than their respective thresholds
 
 If adaptive watering is disabled, but scheduling remains enabled, each zone will be watered for a percentage (specified in `zonePercentages`) of the number of minutes specified in `defaultDuration`
@@ -108,9 +108,9 @@ Start times will vary daily as a result of changing sunrise times.
 When adaptive watering is enabled, a zone's total watering duration will be calculated as a percentage (specified in `zonePercentages`) of the calculation below:
 
 ```js
-highDiff = tomorrowMax - highThreshold
-lowDiff = highThreshold - tomorrowMin
-cloudPercentage = 100 - (tomorrowCloud / 2)
+highDiff = waterDay.max - highThreshold
+lowDiff = highThreshold - waterDay.min
+cloudPercentage = 100 - (waterDay.clouds / 2)
 zoneMaxDuration = ((defaultDuration + (highDiff - lowDiff)) / 100) * cloudPercentage
 ```
 
