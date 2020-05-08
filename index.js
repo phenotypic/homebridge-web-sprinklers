@@ -36,6 +36,7 @@ function WebSprinklers (log, config) {
 
   this.lowThreshold = config.lowThreshold || 10
   this.highThreshold = config.highThreshold || 20
+  this.rainThreshold = config.rainThreshold || 3
 
   this.defaultDuration = config.defaultDuration || 20
   this.maxDuration = config.maxDuration || 30
@@ -162,7 +163,7 @@ WebSprinklers.prototype = {
         today.sunrise = new Date(json.daily[0].sunrise * 1000)
         today.min = json.daily[0].temp.min
         today.max = json.daily[0].temp.max
-        today.rain = 'rain' in json.daily[0]
+        today.rain = ('rain' in json.daily[0]) ? json.daily[0].rain : 0
         today.clouds = json.daily[0].clouds
 
         var tomorrow = {}
@@ -170,7 +171,7 @@ WebSprinklers.prototype = {
         tomorrow.sunrise = new Date(json.daily[1].sunrise * 1000)
         tomorrow.min = json.daily[1].temp.min
         tomorrow.max = json.daily[1].temp.max
-        tomorrow.rain = 'rain' in json.daily[1]
+        tomorrow.rain = ('rain' in json.daily[1]) ? json.daily[1].rain : 0
         tomorrow.clouds = json.daily[1].clouds
 
         this.log('----------------------------------------------')
@@ -178,14 +179,14 @@ WebSprinklers.prototype = {
         this.log('Today sunrise: %s', today.sunrise.toLocaleString())
         this.log('Today min temp: %s °C', today.min)
         this.log('Today max temp: %s °C', today.max)
-        this.log('Today rain: %s', today.rain)
+        this.log('Today rain: %s mm', today.rain)
         this.log('Today cloud cover: %s %', today.clouds)
         this.log('----------------------------------------------')
         this.log('Tomorrow summary: %s', tomorrow.summary)
         this.log('Tomorrow sunrise: %s', tomorrow.sunrise.toLocaleString())
         this.log('Tomorrow min temp: %s °C', tomorrow.min)
         this.log('Tomorrow max temp: %s °C', tomorrow.max)
-        this.log('Tomorrow rain: %s', tomorrow.rain)
+        this.log('Tomorrow rain: %s mm', tomorrow.rain)
         this.log('Tomorrow cloud cover: %s %', tomorrow.clouds)
         this.log('----------------------------------------------')
 
@@ -204,13 +205,13 @@ WebSprinklers.prototype = {
           waterDay = tomorrow
         }
 
-        if (!this.restrictedDays.includes(waterDay.sunrise.getDay()) && !this.restrictedMonths.includes(waterDay.sunrise.getMonth()) && !today.rain && !tomorrow.rain && waterDay.min > this.lowThreshold && waterDay.max > this.highThreshold) {
+        if (!this.restrictedDays.includes(waterDay.sunrise.getDay()) && !this.restrictedMonths.includes(waterDay.sunrise.getMonth()) && today.rain < this.rainThreshold && tomorrow.rain < this.rainThreshold && waterDay.min > this.lowThreshold && waterDay.max > this.highThreshold) {
           var zoneMaxDuration = this.defaultDuration
           if (!this.disableAdaptiveWatering) {
             var highDiff = waterDay.max - this.highThreshold
             var lowDiff = this.highThreshold - waterDay.min
-            var cloudPercentage = 100 - (waterDay.clouds / 2)
-            zoneMaxDuration = ((this.defaultDuration + (highDiff - lowDiff)) / 100) * cloudPercentage
+            var cloudPercentage = 100 - (waterDay.clouds / 3)
+            zoneMaxDuration = (((this.defaultDuration + (highDiff - lowDiff)) / 100) * cloudPercentage) - waterDay.rain
             if (zoneMaxDuration > this.maxDuration) {
               zoneMaxDuration = this.maxDuration
             }
