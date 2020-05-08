@@ -68,11 +68,12 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `cycles` | Number of cycles per zone (watering is spread between cycles)  | `2` |
 | `restrictedDays` | Days of the week when watering should **not** take place (Sunday is `0`, Monday is `1`, and so on) | N/A |
 | `restrictedMonths` | Months of the year when watering should **not** take place (January is `0`, February is `1`, and so on) | N/A |
-| `lowThreshold` | Forecasted low temperature (°C) below which watering will not take place | `10` |
-| `highThreshold` | Forecasted high temperature (°C) below which watering will not take place | `20` |
-| `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `30` |
 | `zonePercentages` | Percentage of calculated zone watering time that a specific zone will receive (do not exceed 100%) | `100` |
 | `disableAdaptiveWatering` | Whether to disable adaptive watering and use `defaultDuration` instead | `false` |
+| `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `30` |
+| `lowThreshold` | Forecasted low temperature (°C) below which watering will not take place | `10` |
+| `highThreshold` | Forecasted high temperature (°C) below which watering will not take place | `20` |
+| `rainThreshold` | Forecasted rainfall (mm) above which watering will not take place | `2.5` |
 
 ### Additional options
 | Key | Description | Default |
@@ -94,7 +95,7 @@ When scheduling is enabled, the plugin will see if watering can be completed tod
 The day selected must match the following criteria for watering to place:
 
 - Not a restricted day/month
-- No rain forecasted for today or tomorrow
+- Forecasted rain for today and tomorrow not higher than threshold
 - Forecasted low and high temperature higher than their respective thresholds
 
 If adaptive watering is disabled, but scheduling remains enabled, each zone will be watered for a percentage (specified in `zonePercentages`) of the number of minutes specified in `defaultDuration`
@@ -110,8 +111,8 @@ When adaptive watering is enabled, a zone's total watering duration will be calc
 ```js
 highDiff = waterDay.max - highThreshold
 lowDiff = highThreshold - waterDay.min
-cloudPercentage = 100 - (waterDay.clouds / 2)
-zoneMaxDuration = ((defaultDuration + (highDiff - lowDiff)) / 100) * cloudPercentage
+cloudPercentage = 100 - (waterDay.clouds / 3)
+zoneMaxDuration = (((defaultDuration + (highDiff - lowDiff)) / 100) * cloudPercentage) - waterDay.rain
 ```
 
 ## API Interfacing
