@@ -116,7 +116,7 @@ WebSprinklers.prototype = {
 
         for (var zone = 1; zone <= this.zones; zone++) {
           var value = json[zone - 1].state
-          this.log('Zone %s | Updated state to: %s', zone, value)
+          this.log.debug('Zone %s | Updated state to: %s', zone, value)
           this.valveAccessory[zone].getCharacteristic(Characteristic.Active).updateValue(value)
           this.valveAccessory[zone].getCharacteristic(Characteristic.InUse).updateValue(value)
         }
