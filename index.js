@@ -53,8 +53,17 @@ function WebSprinklers (log, config) {
   this.model = config.model || packageJson.name
   this.firmware = config.firmware || packageJson.version
 
+  this.username = config.username || null
+  this.password = config.password || null
   this.timeout = config.timeout || 3000
   this.http_method = config.http_method || 'GET'
+
+  if (this.username != null && this.password != null) {
+    this.auth = {
+      user: this.username,
+      pass: this.password
+    }
+  }
 
   if (this.listener) {
     this.server = http.createServer(function (request, response) {
@@ -93,7 +102,8 @@ WebSprinklers.prototype = {
       body: body,
       method: this.http_method,
       timeout: this.timeout,
-      rejectUnauthorized: false
+      rejectUnauthorized: false,
+      auth: this.auth
     },
     function (error, response, body) {
       callback(error, response, body)

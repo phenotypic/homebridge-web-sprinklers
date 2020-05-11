@@ -90,6 +90,8 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `listener` | Whether to start a listener to get real-time changes from the device | `false` |
 | `timeout` | Time (in milliseconds) until the accessory will be marked as _Not Responding_ if it is unreachable | `3000` |
 | `port` | Port for your HTTP listener (if enabled) | `2000` |
+| `username` | Username if HTTP authentication is enabled | N/A |
+| `password` | Password if HTTP authentication is enabled | N/A |
 | `http_method` | HTTP method used to communicate with the device | `GET` |
 | `model` | Appears under the _Model_ field for the accessory | plugin |
 | `serial` | Appears under the _Serial_ field for the accessory | apiroute |
