@@ -2,6 +2,7 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
+#include <ArduinoJson.h>
 
 // GitHub Page = https://github.com/Tommrodrigues/homebridge-web-sprinkers
 
@@ -93,11 +94,17 @@ void setup() {
   });
 
   server.on("/status", []() {
-    String json = "[";
-    for (i = 1; i < zones; i++) {
-      json += "{\"zone\": " + String(i) + ",\"state\": " + String(stateArray[i]) + "},";
+    size_t capacity = JSON_ARRAY_SIZE(zones) + zones*JSON_OBJECT_SIZE(2);
+    DynamicJsonDocument doc(capacity);
+
+    for (i = 1; i <= zones; i++) {
+      JsonObject list = doc.createNestedObject();
+      list["zone"] = i;
+      list["state"] = stateArray[i];
     }
-    json += "{\"zone\": " + String(i) + ",\"state\": " + String(stateArray[i]) + "}]";
+
+    String json;
+    serializeJson(doc, json);
     server.send(200, "application/json", json);
   });
 
