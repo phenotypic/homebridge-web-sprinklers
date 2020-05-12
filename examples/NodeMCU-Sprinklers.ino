@@ -1,4 +1,6 @@
 #include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 
 // GitHub Page = https://github.com/Tommrodrigues/homebridge-web-sprinkers
@@ -31,7 +33,7 @@ const int zonePins[10] = {0, 16, 5, 4, 0, 2, 14, 12, 13, 15};
 unsigned long timeArray[zones + 1];
 int stateArray[zones + 1], relayOn, relayOff, i;
 
-WiFiServer server(80);
+ESP8266WebServer server(80);
 
 void setup() {
   if (relay.equals("LOW")) {
@@ -68,9 +70,6 @@ void setup() {
   Serial.println();
   Serial.println("Connected successfully");
 
-  // Start the server
-  server.begin();
-
   // Print the IP address
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
@@ -80,10 +79,34 @@ void setup() {
   }
   Serial.println("mDNS address: " + String(mdns) + ".local");
 
+  server.on("/setState", []() {
+    int zone = server.arg("zone").toInt();
+    int value = server.arg("value").toInt();
+    stateArray[zone] = value;
+    if (value) {
+      timeArray[zone] = millis();
+      digitalWrite(zonePins[zone], relayOn);
+    } else {
+      digitalWrite(zonePins[zone], relayOff);
+    }
+    server.send(200);
+  });
+
+  server.on("/status", []() {
+    String json = "[";
+    for (i = 1; i < zones; i++) {
+      json += "{\"zone\": " + String(i) + ",\"state\": " + String(stateArray[i]) + "},";
+    }
+    json += "{\"zone\": " + String(i) + ",\"state\": " + String(stateArray[i]) + "}]";
+    server.send(200, "application/json", json);
+  });
+
+  // Start the server
+  server.begin();
 }
 
 void loop() {
-
+  server.handleClient();
   MDNS.update();
 
   for (i = 1; i <= zones; i++) {
@@ -93,52 +116,4 @@ void loop() {
       stateArray[i] = 0;
     }
   }
-
-  // Check if a client has connected
-  WiFiClient client = server.available();
-  if (!client) {
-    return;
-  }
-
-  // Wait until the client sends some data
-  Serial.println("New client");
-  while(!client.available()){
-    delay(1);
-  }
-
-  // Read the first line of the request
-  String request = client.readStringUntil('\r');
-  Serial.println(request);
-  client.flush();
-
-  // Return the response
-  client.println("HTTP/1.1 200 OK");
-  client.println("Content-Type: text/html");
-  client.println("");
-
-  // Match the request
-  if (request.indexOf("/setState") != -1)  {
-    int zone = request.substring(5, 6).toInt();
-    int value = request.substring(16, 17).toInt();
-    stateArray[zone] = value;
-    if (value) {
-      timeArray[zone] = millis();
-      digitalWrite(zonePins[zone], relayOn);
-    } else {
-      digitalWrite(zonePins[zone], relayOff);
-    }
-  }
-
-  if (request.indexOf("/status") != -1)  {
-    client.print("[");
-    for (i = 1; i < zones; i++) {
-      client.println("{\"zone\": " + String(i) + ",\"state\": " + String(stateArray[i]) + "},");
-    }
-    client.println("{\"zone\": " + String(i) + ",\"state\": " + String(stateArray[i]) + "}]");
-  }
-
-  delay(1);
-  Serial.println("Client disconnected");
-  Serial.println("");
-
 }
