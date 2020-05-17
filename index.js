@@ -36,7 +36,7 @@ function WebSprinklers (log, config) {
 
   this.lowThreshold = config.lowThreshold || 10
   this.highThreshold = config.highThreshold || 20
-  this.rainThreshold = config.rainThreshold || 3
+  this.rainThreshold = config.rainThreshold || 2.3
 
   this.defaultDuration = config.defaultDuration || 20
   this.maxDuration = config.maxDuration || 30

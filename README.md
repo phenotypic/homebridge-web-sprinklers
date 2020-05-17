@@ -81,7 +81,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `maxDuration` | The highest number of minutes that `adaptiveWatering` can set | `30` |
 | `lowThreshold` | Forecasted low temperature (°C) below which watering will not take place | `10` |
 | `highThreshold` | Forecasted high temperature (°C) below which watering will not take place | `20` |
-| `rainThreshold` | Forecasted rainfall (mm) above which watering will not take place | `3` |
+| `rainThreshold` | Forecasted rainfall (mm) above which watering will not take place | `2.3` |
 
 ### Additional options
 | Key | Description | Default |
