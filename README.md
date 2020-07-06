@@ -37,7 +37,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
        "longitude": 0000000000,
        "key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
        "zones": 6,
-       "restrictedDays": [2, 4, 6],
+       "restrictedMonths": [0, 1, 2, 10, 11],
        "zonePercentages": [100, 75, 100, 100, 50, 100]
      }
 ]
