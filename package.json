@@ -17,15 +17,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Tommrodrigues/homebridge-web-sprinklers.git"
+    "url": "git+https://github.com/phenotypic/homebridge-web-sprinklers.git"
   },
   "keywords": [
     "homebridge-plugin"
   ],
-  "author": "Tom Rodrigues",
+  "author": "phenotypic",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Tommrodrigues/homebridge-web-sprinklers/issues"
+    "url": "https://github.com/phenotypic/homebridge-web-sprinklers/issues"
   },
-  "homepage": "https://github.com/Tommrodrigues/homebridge-web-sprinklers#readme"
+  "homepage": "https://github.com/phenotypic/homebridge-web-sprinklers#readme"
 }
