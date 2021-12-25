@@ -12,13 +12,13 @@
 
 ## Description
 
-This [homebridge](https://github.com/nfarina/homebridge) plugin exposes a web-based sprinkler system to Apple's [HomeKit](http://www.apple.com/ios/home/). Using HTTP requests, the plugin allows you to turn on/off individual sprinkler zones. With the use of the [OpenWeatherMap API](https://openweathermap.org/api), the plugin can also provide water scheduling.
+This [homebridge](https://github.com/homebridge/homebridge) plugin exposes a web-based sprinkler system to Apple's [HomeKit](http://www.apple.com/ios/home/). Using HTTP requests, the plugin allows you to turn on/off individual sprinkler zones. With the use of the [OpenWeatherMap API](https://openweathermap.org/api), the plugin can also provide water scheduling.
 
 Find script samples for the sprinkler controller in the _examples_ folder.
 
 ## Installation
 
-1. Install [homebridge](https://github.com/nfarina/homebridge#installation-details)
+1. Install [homebridge](https://github.com/homebridge/homebridge#installation)
 2. Install this plugin: `npm install -g homebridge-web-sprinklers`
 3. Sign up (for free) to the [OpenWeatherMap API](https://openweathermap.org/api) and retrieve your API key (if you want scheduling)
 4. Update your `config.json` file
