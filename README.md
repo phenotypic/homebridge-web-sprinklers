@@ -67,7 +67,7 @@ Find script samples for the sprinkler controller in the _examples_ folder.
 | `key` | Your [OpenWeatherMap API](https://openweathermap.org/api) key  | N/A |
 | `zones` | Number of sprinkler zones  | `6` |
 
-## Optional fields
+### Optional fields
 | Key | Description | Default |
 | --- | --- | --- |
 | `disableScheduling` | Whether to disable water scheduling | `false` |
