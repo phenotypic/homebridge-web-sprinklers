@@ -120,15 +120,19 @@ WebSprinklers.prototype = {
       } else {
         this.service.getCharacteristic(Characteristic.Active).updateValue(1)
         this.log.debug('Device response: %s', responseBody)
-        var json = JSON.parse(responseBody)
+        try {
+          var json = JSON.parse(responseBody)
 
-        for (var zone = 1; zone <= this.zones; zone++) {
-          var value = json[zone - 1].state
-          this.log.debug('Zone %s | Updated state to: %s', zone, value)
-          this.valveAccessory[zone].getCharacteristic(Characteristic.Active).updateValue(value)
-          this.valveAccessory[zone].getCharacteristic(Characteristic.InUse).updateValue(value)
+          for (var zone = 1; zone <= this.zones; zone++) {
+            var value = json[zone - 1].state
+            this.log.debug('Zone %s | Updated state to: %s', zone, value)
+            this.valveAccessory[zone].getCharacteristic(Characteristic.Active).updateValue(value)
+            this.valveAccessory[zone].getCharacteristic(Characteristic.InUse).updateValue(value)
+          }
+          callback()
+        } catch (e) {
+          this.log.warn('Error parsing status: %s', e.message)
         }
-        callback()
       }
     }.bind(this))
   },
