@@ -1,4 +1,4 @@
-var Service, Characteristic
+let Service, Characteristic
 const packageJson = require('./package.json')
 const schedule = require('node-schedule')
 const request = require('request')
@@ -67,12 +67,16 @@ function WebSprinklers (log, config) {
 
   if (this.listener) {
     this.server = http.createServer(function (request, response) {
-      var baseURL = 'http://' + request.headers.host + '/'
-      var url = new URL(request.url, baseURL)
+      const baseURL = 'http://' + request.headers.host + '/'
+      const url = new URL(request.url, baseURL)
       if (this.requestArray.includes(url.pathname.substr(1))) {
-        this.log.debug('Handling request')
-        response.end('Handling request')
-        this._httpHandler(url.searchParams.get('zone'), url.pathname.substr(1), url.searchParams.get('value'))
+        try {
+          this.log.debug('Handling request')
+          response.end('Handling request')
+          this._httpHandler(url.searchParams.get('zone'), url.pathname.substr(1), url.searchParams.get('value'))
+        } catch (e) {
+          this.log.warn('Error parsing request: %s', e.message)
+        }
       } else {
         this.log.warn('Invalid request: %s', request.url)
         response.end('Invalid request')
@@ -109,7 +113,7 @@ WebSprinklers.prototype = {
   },
 
   _getStatus: function (callback) {
-    var url = this.apiroute + '/status'
+    const url = this.apiroute + '/status'
     this.log.debug('Getting status: %s', url)
 
     this._httpRequest(url, '', 'GET', function (error, response, responseBody) {
@@ -121,10 +125,10 @@ WebSprinklers.prototype = {
         this.service.getCharacteristic(Characteristic.Active).updateValue(1)
         this.log.debug('Device response: %s', responseBody)
         try {
-          var json = JSON.parse(responseBody)
+          const json = JSON.parse(responseBody)
 
-          for (var zone = 1; zone <= this.zones; zone++) {
-            var value = json[zone - 1].state
+          for (let zone = 1; zone <= this.zones; zone++) {
+            const value = json[zone - 1].state
             this.log.debug('Zone %s | Updated state to: %s', zone, value)
             this.valveAccessory[zone].getCharacteristic(Characteristic.Active).updateValue(value)
             this.valveAccessory[zone].getCharacteristic(Characteristic.InUse).updateValue(value)
@@ -139,18 +143,20 @@ WebSprinklers.prototype = {
 
   _httpHandler: function (zone, characteristic, value) {
     switch (characteristic) {
-      case 'state':
+      case 'state': {
         this.valveAccessory[zone].getCharacteristic(Characteristic.Active).updateValue(value)
         this.valveAccessory[zone].getCharacteristic(Characteristic.InUse).updateValue(value)
         this.log('Zone %s | Updated %s to: %s', zone, characteristic, value)
         break
-      default:
+      }
+      default: {
         this.log.warn('Zone %s | Unknown characteristic "%s" with value "%s"', zone, characteristic, value)
+      }
     }
   },
 
   _calculateSchedule: function (callback) {
-    var url = 'https://api.openweathermap.org/data/2.5/onecall?lat=' + this.latitude + '&lon=' + this.longitude + '&exclude=current,hourly&units=metric&appid=' + this.key
+    const url = 'https://api.openweathermap.org/data/2.5/onecall?lat=' + this.latitude + '&lon=' + this.longitude + '&exclude=current,hourly&units=metric&appid=' + this.key
     this.log.debug('Retrieving weather data: %s', url)
     this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
       if (error) {
@@ -162,7 +168,7 @@ WebSprinklers.prototype = {
       } else {
         this.log.debug('Weather data: %s', responseBody)
         try {
-          var json = JSON.parse(responseBody)
+          const json = JSON.parse(responseBody)
         } catch (error) {
           setTimeout(() => {
             this._calculateSchedule(function () {})
@@ -170,7 +176,7 @@ WebSprinklers.prototype = {
           return this.log.error('Error parsing weather data: %s', error)
         }
 
-        var today = {}
+        const today = {}
         today.summary = json.daily[0].weather[0].description
         today.sunrise = new Date(json.daily[0].sunrise * 1000)
         today.min = json.daily[0].temp.min
@@ -178,7 +184,7 @@ WebSprinklers.prototype = {
         today.rain = ('rain' in json.daily[0]) ? json.daily[0].rain : 0
         today.clouds = json.daily[0].clouds
 
-        var tomorrow = {}
+        const tomorrow = {}
         tomorrow.summary = json.daily[1].weather[0].description
         tomorrow.sunrise = new Date(json.daily[1].sunrise * 1000)
         tomorrow.min = json.daily[1].temp.min
@@ -202,15 +208,15 @@ WebSprinklers.prototype = {
         this.log('Tomorrow cloud cover: %s %', tomorrow.clouds)
         this.log('----------------------------------------------')
 
-        var maximumTotal
+        let maximumTotal
         if (this.disableAdaptiveWatering) {
           maximumTotal = this.zones * this.defaultDuration
         } else {
           maximumTotal = this.zones * this.maxDuration
         }
 
-        var earliestToday = new Date(today.sunrise.getTime() - (maximumTotal + this.sunriseOffset) * 60000)
-        var waterDay
+        const earliestToday = new Date(today.sunrise.getTime() - (maximumTotal + this.sunriseOffset) * 60000)
+        let waterDay
         if (earliestToday.getTime() > Date.now()) {
           waterDay = today
         } else {
@@ -218,25 +224,25 @@ WebSprinklers.prototype = {
         }
 
         if (!this.restrictedDays.includes(waterDay.sunrise.getDay()) && !this.restrictedMonths.includes(waterDay.sunrise.getMonth()) && today.rain < this.rainThreshold && tomorrow.rain < this.rainThreshold && waterDay.min > this.lowThreshold && waterDay.max > this.highThreshold) {
-          var zoneMaxDuration = this.defaultDuration
+          let zoneMaxDuration = this.defaultDuration
           if (!this.disableAdaptiveWatering) {
-            var highDiff = waterDay.max - this.highThreshold
-            var lowDiff = this.highThreshold - waterDay.min
-            var cloudPercentage = 100 - (waterDay.clouds / 3)
+            const highDiff = waterDay.max - this.highThreshold
+            const lowDiff = this.highThreshold - waterDay.min
+            const cloudPercentage = 100 - (waterDay.clouds / 3)
             zoneMaxDuration = (((this.defaultDuration + (highDiff - lowDiff)) / 100) * cloudPercentage) - waterDay.rain
             if (zoneMaxDuration > this.maxDuration) {
               zoneMaxDuration = this.maxDuration
             }
           }
 
-          for (var zone = 1; zone <= this.zones; zone++) {
+          for (let zone = 1; zone <= this.zones; zone++) {
             this.zoneDuration[zone] = ((zoneMaxDuration / this.cycles) / 100) * this.zonePercentages[zone - 1]
           }
 
-          var totalTime = this.zoneDuration.reduce((a, b) => a + b, 0) * this.cycles
+          const totalTime = this.zoneDuration.reduce((a, b) => a + b, 0) * this.cycles
 
-          var startTime = new Date(waterDay.sunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
-          var finishTime = new Date(startTime.getTime() + totalTime * 60000)
+          const startTime = new Date(waterDay.sunrise.getTime() - (totalTime + this.sunriseOffset) * 60000)
+          const finishTime = new Date(startTime.getTime() + totalTime * 60000)
 
           this.log('Watering starts: %s', startTime.toLocaleString())
           this.log('Watering finishes: %s', finishTime.toLocaleString())
@@ -244,7 +250,7 @@ WebSprinklers.prototype = {
           this.log('Zone max duration: %s minutes', Math.round(zoneMaxDuration))
           this.log('----------------------------------------------')
 
-          for (zone = 1; zone <= this.zones; zone++) {
+          for (let zone = 1; zone <= this.zones; zone++) {
             this.log('Zone %s | %sx %s minute cycles', zone, this.cycles, Math.round(this.zoneDuration[zone]))
           }
 
@@ -270,11 +276,11 @@ WebSprinklers.prototype = {
     this.valveAccessory[zone].setCharacteristic(Characteristic.Active, 1)
     setTimeout(() => {
       this.valveAccessory[zone].setCharacteristic(Characteristic.Active, 0)
-      var nextZone = zone + 1
+      const nextZone = zone + 1
       if (nextZone <= this.zones) {
         this._wateringCycle(nextZone, cycle)
       } else {
-        var nextCycle = cycle + 1
+        const nextCycle = cycle + 1
         if (nextCycle <= this.cycles) {
           this._wateringCycle(1, nextCycle)
           this.log('Starting watering cycle %s/%s', nextCycle, this.cycles)
@@ -287,7 +293,7 @@ WebSprinklers.prototype = {
   },
 
   setActive: function (zone, value, callback) {
-    var url = this.apiroute + '/setState?zone=' + zone + '&value=' + value
+    const url = this.apiroute + '/setState?zone=' + zone + '&value=' + value
     this.log.debug('Zone %s | Setting state: %s', zone, url)
     this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
       if (error) {
@@ -313,9 +319,9 @@ WebSprinklers.prototype = {
       .setCharacteristic(Characteristic.SerialNumber, this.serial)
       .setCharacteristic(Characteristic.FirmwareRevision, this.firmware)
 
-    var services = [this.informationService, this.service]
-    for (var zone = 1; zone <= this.zones; zone++) {
-      var accessory = new Service.Valve('Zone', zone)
+    const services = [this.informationService, this.service]
+    for (let zone = 1; zone <= this.zones; zone++) {
+      const accessory = new Service.Valve('Zone', zone)
       accessory
         .setCharacteristic(Characteristic.ServiceLabelIndex, zone)
         .setCharacteristic(Characteristic.ValveType, 1)
