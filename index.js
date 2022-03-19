@@ -167,8 +167,9 @@ WebSprinklers.prototype = {
         callback(error)
       } else {
         this.log.debug('Weather data: %s', responseBody)
+        let json
         try {
-          const json = JSON.parse(responseBody)
+          json = JSON.parse(responseBody)
         } catch (error) {
           setTimeout(() => {
             this._calculateSchedule(function () {})
