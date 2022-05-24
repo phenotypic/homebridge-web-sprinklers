@@ -60,7 +60,7 @@ npm install -g homebridge-web-sprinklers
 | | 2: `Normally Open` | 2: `Activator` | |
 | | 3: `Normally Open` | 3: `Activator` | |
 | `D0` | 1: `IN1` | | |
-| `D1` | 2: `IN1` | | |
-| `D2` | 3: `IN1` | | |
+| `D1` | 2: `IN2` | | |
+| `D2` | 3: `IN3` | | |
 | `3V3` | `VCC` | | |
 | `GND` | `GND` | | |
