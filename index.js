@@ -156,7 +156,7 @@ WebSprinklers.prototype = {
   },
 
   _calculateSchedule: function (callback) {
-    const url = 'https://api.openweathermap.org/data/2.5/onecall?lat=' + this.latitude + '&lon=' + this.longitude + '&exclude=current,hourly&units=metric&appid=' + this.key
+    const url = 'https://api.openweathermap.org/data/3.0/onecall?lat=' + this.latitude + '&lon=' + this.longitude + '&exclude=current,hourly&units=metric&appid=' + this.key
     this.log.debug('Retrieving weather data: %s', url)
     this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
       if (error) {
